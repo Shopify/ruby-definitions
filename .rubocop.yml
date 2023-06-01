@@ -1,4 +1,10 @@
+inherit_gem:
+  rubocop-shopify: rubocop.yml
+
+require: rubocop-minitest
+
 AllCops:
+  SuggestExtensions: false
   TargetRubyVersion: 2.6
 
 Style/StringLiterals:
