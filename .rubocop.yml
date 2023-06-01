@@ -6,6 +6,7 @@ require:
   - rubocop-sorbet
 
 AllCops:
+  NewCops: enable
   SuggestExtensions: false
   TargetRubyVersion: 2.6
 
