@@ -1,0 +1,9 @@
+# https://github.com/ruby/ruby/compare/ruby_3_1...Shopify:v3.1.0-pshopify1
+
+# Contains all commits already backported to `ruby_3_1`, and:
+#   @nobu Fix memory leak at the same named alias [Bug #18516]
+#   @nobu Shifting zero always results in zero [Bug #18517]
+#   @jhawthorn Speed up and avoid kwarg hash alloc in Time.now https://github.com/ruby/ruby/pull/5429
+
+install_package "openssl-3.1.0" "https://www.openssl.org/source/openssl-3.1.0.tar.gz#aaa925ad9828745c4cad9d9efeb273deca820f2cdcf2c3ac7d7c1212b7c497b4" openssl --if needs_openssl_102_300
+install_git "ruby-3.1.0-pshopify1" "https://github.com/Shopify/ruby.git" "v3.1.0-pshopify1" ldflags_dirs autoconf standard_build standard_install_with_bundled_gems verify_openssl

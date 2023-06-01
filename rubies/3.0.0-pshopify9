@@ -1,0 +1,9 @@
+export RUBY_CONFIGURE_OPTS="--disable-jit-support ${RUBY_CONFIGURE_OPTS}"
+
+# https://github.com/ruby/ruby/compare/ruby_3_0...Shopify:v3.0.0-pshopify9
+# @jeremyevans [Resolv] Revert the change to fix duplicate responses on Linux https://github.com/ruby/resolv/pull/7
+# @jeremyevans Ensure that caller respects the start argument https://github.com/ruby/ruby/commit/4a571830afdede960cae6dac20499b45aa3b83e6
+# v3.0.0-pshopify9 = b84ae98174ee4bb4e1023d200bb6e7a764e50f99
+
+install_package "openssl-3.1.0" "https://www.openssl.org/source/openssl-3.1.0.tar.gz#aaa925ad9828745c4cad9d9efeb273deca820f2cdcf2c3ac7d7c1212b7c497b4" openssl --if needs_openssl_102_300
+install_git "ruby-3.0.0-pshopify9" "https://github.com/Shopify/ruby.git" "v3.0.0-pshopify9" ldflags_dirs autoconf standard_build standard_install_with_bundled_gems verify_openssl

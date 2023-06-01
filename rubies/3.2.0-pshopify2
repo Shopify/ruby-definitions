@@ -1,0 +1,12 @@
+# https://github.com/ruby/ruby/compare/v3_2_0...Shopify:v3.2.0-pshopify1
+
+# Based off `v3_2_0`, with backports of:
+#   @byroot [ruby/set] Avoid the `block or return` pattern to save Proc allocations https://github.com/ruby/set/pull/29
+#   @XrXr YJIT: Save PC and SP before calling leaf builtin https://github.com/ruby/ruby/pull/7090
+#   @peterzhu2118 Fix re-embedding of strings during compaction https://github.com/ruby/ruby/pull/7071
+#   @peterzhu2118 Fix undefined behavior in shape.c https://github.com/ruby/ruby/pull/7067
+#   @peterzhu2118 [Bug #19319] Fix crash in rb_str_casemap https://github.com/ruby/ruby/pull/7080
+#   @tenderlove Return 0 if there is no CFP on the EC yet https://github.com/ruby/ruby/pull/7116
+
+install_package "openssl-3.1.0" "https://www.openssl.org/source/openssl-3.1.0.tar.gz#aaa925ad9828745c4cad9d9efeb273deca820f2cdcf2c3ac7d7c1212b7c497b4" openssl --if needs_openssl_102_300
+install_git "ruby-3.2.0-pshopify2" "https://github.com/Shopify/ruby.git" "v3.2.0-pshopify2" ldflags_dirs autoconf standard_build standard_install_with_bundled_gems verify_openssl
