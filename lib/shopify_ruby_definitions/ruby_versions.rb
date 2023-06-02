@@ -1,14 +1,10 @@
-# typed: strong
 # frozen_string_literal: true
 
 module ShopifyRubyDefinitions
   module RubyVersions
-    extend T::Sig
+    VERSIONS_DIRECTORY = File.join(RubyBuild::RUBY_BUILD_DIRECTORY, "share/ruby-build")
+    ALL_VERSIONS = Dir["#{VERSIONS_DIRECTORY}/*"].map { |f| File.basename(f) }
 
-    VERSIONS_DIRECTORY = T.let(File.join(RubyBuild::RUBY_BUILD_DIRECTORY, "share/ruby-build"), String)
-    ALL_VERSIONS = T.let(Dir["#{VERSIONS_DIRECTORY}/*"].map { |f| File.basename(f) }, T::Array[String])
-
-    sig { returns(T::Hash[String, String]) }
     def version_overrides
       {
         "head" => ruby_head_version,
@@ -27,13 +23,12 @@ module ShopifyRubyDefinitions
       }.freeze
     end
 
-    sig { params(version: String).returns(String) }
     def resolve_version(version)
       if version.match?(/\A\d+\.\d+\z/)
         pattern = /\A#{Regexp.escape(version)}\.(\d+)\z/
         versions = ALL_VERSIONS.grep(pattern)
         unless versions.empty?
-          version = T.must(versions.max_by { |v| T.must(v.match(pattern))[1].to_i })
+          version = versions.max_by { |v| v.match(pattern)[1].to_i }
         end
       end
       version_overrides.fetch(version, version)
@@ -41,9 +36,8 @@ module ShopifyRubyDefinitions
 
     private
 
-    sig { returns(String) }
     def ruby_head_version
-      T.must(ALL_VERSIONS.grep(/\A[\d\.]+-dev\z/).max)
+      ALL_VERSIONS.grep(/\A[\d\.]+-dev\z/).max
     end
   end
 end

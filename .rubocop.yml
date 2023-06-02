@@ -3,7 +3,6 @@ inherit_gem:
 
 require:
   - rubocop-minitest
-  - rubocop-sorbet
 
 AllCops:
   NewCops: enable
