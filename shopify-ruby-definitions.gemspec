@@ -27,11 +27,6 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency("sorbet-runtime")
-
   spec.add_development_dependency("rubocop-minitest")
   spec.add_development_dependency("rubocop-shopify")
-  spec.add_development_dependency("rubocop-sorbet")
-  spec.add_development_dependency("sorbet")
-  spec.add_development_dependency("tapioca")
 end

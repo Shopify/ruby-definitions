@@ -11,7 +11,7 @@ jobs:
     strategy:
       matrix:
         ruby:
-          - '3.2.0'
+          - "3.2"
 
     steps:
     - uses: actions/checkout@v3
@@ -22,5 +22,3 @@ jobs:
         bundler-cache: true
     - name: Run tests
       run: bundle exec rake
-    - name: Run typecheck
-      run: bundle exec srb tc
