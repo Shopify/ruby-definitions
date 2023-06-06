@@ -4,21 +4,14 @@ module ShopifyRubyDefinitions
   module RubyVersions
     VERSIONS_DIRECTORY = File.expand_path("../../../rubies", __FILE__)
     ALL_VERSIONS = Dir["#{VERSIONS_DIRECTORY}/*"].map { |f| File.basename(f) }
+    VERSION_OVERRIDES = ALL_VERSIONS.sort_by do |version|
+      version.scan(/\d+/).map(&:to_i)
+    end.to_h do |version|
+      [version.split("-").first, version]
+    end.freeze
 
     def version_overrides
-      {
-        "3.0.0" => "3.0.0-pshopify9",
-        "3.0.1" => "3.0.1-pshopify2",
-        "3.0.2" => "3.0.2-pshopify3",
-        "3.1.0" => "3.1.0-pshopify1",
-        "3.1.1" => "3.1.1-pshopify2",
-        "3.1.2" => "3.1.2-pshopify2",
-        "3.1.3" => "3.1.3-pshopify1",
-        "3.1.4" => "3.1.4-pshopify1",
-        "3.2.0" => "3.2.0-pshopify2",
-        "3.2.1" => "3.2.1-pshopify5",
-        "3.2.2" => "3.2.2-pshopify3",
-      }.freeze
+      VERSION_OVERRIDES
     end
 
     def resolve_version(version)
