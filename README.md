@@ -1,23 +1,46 @@
 # shopify-ruby-definitions
 
-This repository contains [ruby-build](https://github.com/rbenv/ruby-build/) definitions of Rubies we use at Shopify. These builds are generally API complient with release Rubies, but with additional backports for bugfixes and performance.
+This repository contains [ruby-build](https://github.com/rbenv/ruby-build/) definitions of Rubies we use at Shopify.
+These builds are API complient with release Rubies, but with additional backports for bugfixes and performance.
 
-## Quick start
+## rbenv integration
+
+If you use `rbenv`, you can add the custom rubies with:
+
+```bash
+$ gem install shopify-ruby-definitions
+$ eval "$(shopify-ruby env)"
+```
+
+## standalone ruby-build
+
+If you are using another ruby version manager or no manager at all:
 
 1. Install ruby-build by [following the instructions](https://github.com/rbenv/ruby-build/#installation).
-1. Install the gem:
-    ```
+
+2. Install the gem:
+    ```bash
     $ gem install shopify-ruby-definitions
     ```
-1. Acquire the specific Ruby version of the Ruby version you want to install. Ruby 3.2 is used as an example here:
+
+3. List the custom Ruby versions available:
+    ```bash
+    $ shopify-ruby versions
+    3.0.0-pshopify9
+    3.0.1-pshopify2
+    3.0.2-pshopify3
+    3.1.0-pshopify1
+    3.1.1-pshopify2
+    3.1.2-pshopify2
+    3.1.3-pshopify1
+    3.1.4-pshopify1
+    3.2.0-pshopify2
+    3.2.1-pshopify5
+    3.2.2-pshopify3
+    3.2.2-pshopify4
     ```
-    $ export RUBY_VERSION=`ruby -rshopify_ruby_definitions -e 'puts ShopifyRubyDefinitions.resolve_version("3.2")'`
-    ```
-1. Set the definitions path for ruby-build:
-    ```
-    $ export RUBY_BUILD_DEFINITIONS=`ruby -rshopify_ruby_definitions -e 'puts ShopifyRubyDefinitions::RubyVersions::VERSIONS_DIRECTORY'`
-    ```
-1. Install the Ruby version using ruby-build:
-    ```
-    ruby-build $RUBY_VERSION
+
+4. Install the Ruby version you want, [options are the same than regular `ruby-build`](https://github.com/rbenv/ruby-build#advanced-usage):
+    ```bash
+    $ shopify-ruby build 3.2.2-pshopify4 ~/.rubies/versions/3.2.2
     ```
