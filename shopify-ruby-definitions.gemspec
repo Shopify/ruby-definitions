@@ -6,7 +6,7 @@ Gem::Specification.new do |spec|
   spec.name = "shopify-ruby-definitions"
   spec.version = ShopifyRubyDefinitions::VERSION
   spec.authors = ["Peter Zhu"]
-  spec.email = ["peter@peterzhu.ca"]
+  spec.email = ["ruby@shopify.com"]
 
   spec.summary = "Ruby builds used at Shopify."
   spec.homepage = "https://github.com/Shopify/ruby-definitions"
