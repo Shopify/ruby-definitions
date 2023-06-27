@@ -9,6 +9,8 @@ definitions = [
 ].compact.join(":")
 
 case ARGV.shift
+when "resolve"
+  puts ShopifyRubyDefinitions.resolve_version(ARGV.first)
 when "versions"
   puts ShopifyRubyDefinitions::RubyVersions::ALL_VERSIONS
 when "build"
@@ -18,6 +20,7 @@ when "env"
 else
   $stderr.puts <<~USAGE
     Usage:  shopify-ruby list
+            shopify-ruby resolve <version>
             shopify-ruby build [-kpv] <definition> <prefix>
             shopify-ruby env
   USAGE
