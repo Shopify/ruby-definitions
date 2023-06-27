@@ -44,3 +44,10 @@ If you are using another ruby version manager or no manager at all:
     ```bash
     $ shopify-ruby build 3.2.2-pshopify4 ~/.rubies/versions/3.2.2
     ```
+
+5. Resolve a less specific version to one of these definitions
+    ```bash
+    $ shopify-ruby resolve 3.2
+    $ shopify-ruby resolve 3.2
+    3.2.2-pshopify4
+    ```
