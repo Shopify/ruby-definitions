@@ -1,0 +1,36 @@
+# https://github.com/ruby/ruby/compare/ruby_3_2...Shopify:v3.2.2-pshopify5
+
+# Based off `ruby_3_2`, with backports of:
+#   @byroot [ruby/set] Avoid the `block or return` pattern to save Proc allocations https://github.com/ruby/set/pull/29
+#   @peterzhu2118 Keep shared arrays WB protected https://github.com/ruby/ruby/pull/7224
+#   @peterzhu2118 Make BigDecimal WB protected https://github.com/ruby/bigdecimal/pull/248
+#   @XrXr YJIT String#+@ fixes https://github.com/ruby/ruby/pull/7328
+#   @byroot Add RUBY_GC_HEAP_INIT_SIZE_%d_SLOTS to pre-init pools granularly https://github.com/ruby/ruby/pull/7235
+#   @byroot Consider DATA objects without a mark function as protected https://github.com/ruby/ruby/pull/7263
+#   @byroot Implement Write Barrier for RMatch objects https://github.com/ruby/ruby/pull/7286
+#   @byroot Enable write barriers on File::Stat https://github.com/ruby/ruby/pull/7239
+#   @byroot Implement Write Barrier for Backtrace::Location https://github.com/ruby/ruby/pull/7240
+#   @byroot Mark "mapping_buffer" as write barrier protected https://github.com/ruby/ruby/pull/7238
+#   @byroot Mark "method" objects as protected by write barrier https://github.com/ruby/ruby/pull/7237
+#   @byroot Mark Encoding as Write Barrier protected Mark Encoding as Write Barrier protected
+#   @peterzhu2118 Make Time objects WB protected https://github.com/ruby/ruby/pull/7244
+#   @jhawthorn Use write barriers for Backtrace objects
+#   @peterzhu2118 Crash when malloc during GC
+#   @peterzhu2118 Fix crash when allocating classes with newobj hook
+#   @peterzhu2118 [Bug #19469] Fix crash when resizing generic iv list
+#   @byroot Implement Write Barrier for autoload_data
+#   @byroot Implement Write Barrier for autoload_table_type
+#   @k0kubun YJIT: Protect strings from GC on String#<<
+#   @tenderlove Use an st table for "too complex" objects
+#   @byroot Cache `Process.pid`
+#   @byroot thread_pthread.c: Use a `fork_gen` to protect against fork instead of getpid()
+#   @XrXr Fix write barrier order for klass to cme edge https://github.com/ruby/ruby/pull/7113
+#   @peterzhu2118 Ensure throw data is not set as cause https://github.com/ruby/ruby/pull/7696
+#   @peterzhu2118 Fix crash in rb_gc_register_address https://github.com/ruby/ruby/pull/7670
+#   @peterzhu2118 [Feature #19678] Don't immediately promote children of old objects https://github.com/ruby/ruby/pull/7821
+#   @k0kubun YJIT: Use rb_ivar_get at the end of ivar chains https://github.com/ruby/ruby/pull/7334
+#   @k0kubun / @maximecb / @XrXr YJIT: Add --yjit-pause and RubyVM::YJIT.resume https://github.com/ruby/ruby/pull/7609
+#   @k0kubun YJIT: Make ratio_in_yjit always available https://github.com/ruby/ruby/pull/8064
+
+install_package "openssl-3.1.0" "https://www.openssl.org/source/openssl-3.1.0.tar.gz#aaa925ad9828745c4cad9d9efeb273deca820f2cdcf2c3ac7d7c1212b7c497b4" openssl --if needs_openssl_102_300
+install_git "ruby-3.2.2-pshopify5" "https://github.com/Shopify/ruby.git" "v3.2.2-pshopify5" ldflags_dirs autoconf standard_build standard_install_with_bundled_gems verify_openssl
