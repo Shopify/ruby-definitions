@@ -1,0 +1,6 @@
+build_package_jt() {
+    unset JAVA_HOME
+    JT_IMPORTS_DONT_ASK=true ruby tool/jt.rb build --env native --install $PREFIX_PATH
+}
+
+install_git "truffleruby-integration" "https://github.com/Shopify/truffleruby.git" "integration" jt
