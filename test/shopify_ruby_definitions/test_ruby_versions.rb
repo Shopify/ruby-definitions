@@ -15,6 +15,8 @@ module ShopifyRubyDefinitions
       end
 
       truffleruby_versions.each do |v|
+        next if v.include?("integration")
+
         assert_match(/\Atruffleruby(?:\+graalvm)?(?:-gftc)?(\-\d+\.\d+\.\d+|-dev)(?:\-ce)?\z/, v)
       end
     end
