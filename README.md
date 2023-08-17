@@ -1,7 +1,7 @@
 # shopify-ruby-definitions
 
 This repository contains [ruby-build](https://github.com/rbenv/ruby-build/) definitions of Rubies we use at Shopify.
-These builds are API complient with release Rubies, but with additional backports for bugfixes and performance.
+These builds are API compliant with release Rubies, but with additional backports for bugfixes and performance.
 
 ## rbenv integration
 
