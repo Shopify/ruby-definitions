@@ -1,4 +1,4 @@
-# https://github.com/ruby/ruby/compare/ruby_3_2...Shopify:v3.2.2-pshopify13
+# https://github.com/ruby/ruby/compare/ruby_3_2...Shopify:v3.2.2-pshopify14
 
 # Based off `ruby_3_2`, with backports of:
 #   @byroot [ruby/set] Avoid the `block or return` pattern to save Proc allocations https://github.com/ruby/set/pull/29
@@ -46,6 +46,20 @@
 #   @maximecb YJIT: add stats for ratio of versions per block https://github.com/ruby/ruby/pull/7653
 #   @XrXr YJIT: YJIT: Fix false object collection when setting ivar https://github.com/ruby/ruby/pull/7718
 #   @peterzhu2118 Add REMEMBERED_WB_UNPROTECTED_OBJECTS_LIMIT_RATIO https://github.com/ruby/ruby/pull/7577
+#   @k0kubun YJIT: Fallback setivar if the next shape is too complex ruby/ruby#8152
+#   @byroot YJIT: Fallback setivar if the receiver isn't T_OBJECT ruby/ruby#8160
+#   @maximecb YJIT: handle expandarray_rhs_too_small case ruby/ruby#8161
+#   @maximecb YJIT: add jb (unsigned less-than) instruction to backend ruby/ruby#8168
+#   @maximecb YJIT: guard for array_len >= num in expandarray ruby/ruby#8169
+#   @k0kubun YJIT: Implement checkmatch instruction ruby/ruby#8203
+#   @maximecb YJIT: increase max chain depth for expandarray ruby/ruby#8205
+#   @k0kubun YJIT: Support ifunc on invokeblock ruby/ruby#7233
+#   @k0kubun YJIT: Allow VM_CALL_ARGS_BLOCKARG on invokesuper ruby/ruby#8198
+#   @k0kubun YJIT: Implement GET_BLOCK_HANDLER() for invokesuper ruby/ruby#8206
+#   @k0kubun YJIT: Bump SEND_MAX_DEPTH to 20 ruby/ruby#7469
+#   @k0kubun YJIT: Refactor getlocal and setlocal insns ruby/ruby#7320
+#   @maximecb YJIT: implement side chain fallback for setlocal to avoid exiting ruby/ruby#8227
+#   @byroot YJIT: Stop incrementing jit_entry_calls once threshold is hit https://github.com/ruby/ruby/pull/8259
 
 install_package "openssl-3.1.2" "https://www.openssl.org/source/openssl-3.1.2.tar.gz#a0ce69b8b97ea6a35b96875235aa453b966ba3cba8af2de23657d8b6767d6539" openssl --if needs_openssl_102_300
 install_git "ruby-3.2.2-pshopify13" "https://github.com/Shopify/ruby.git" "v3.2.2-pshopify13" ldflags_dirs autoconf standard_build standard_install_with_bundled_gems verify_openssl
