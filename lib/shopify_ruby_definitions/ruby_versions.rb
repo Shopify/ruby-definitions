@@ -2,13 +2,19 @@
 
 module ShopifyRubyDefinitions
   module RubyVersions
+    class << self
+      def build_version_overrides(all_versions)
+        all_versions.sort_by do |version|
+          version.scan(/\d+/).map(&:to_i)
+        end.to_h do |version|
+          [version.partition("-pshopify").first, version]
+        end.freeze
+      end
+    end
+
     VERSIONS_DIRECTORY = File.expand_path("../../../rubies", __FILE__)
     ALL_VERSIONS = Dir["#{VERSIONS_DIRECTORY}/*"].map { |f| File.basename(f) }
-    VERSION_OVERRIDES = ALL_VERSIONS.sort_by do |version|
-      version.scan(/\d+/).map(&:to_i)
-    end.to_h do |version|
-      [version.split("-").first, version]
-    end.freeze
+    VERSION_OVERRIDES = build_version_overrides(ALL_VERSIONS)
 
     def version_overrides
       VERSION_OVERRIDES
