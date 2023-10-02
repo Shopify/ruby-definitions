@@ -1,0 +1,21 @@
+platform="$(uname -s)-$(uname -m)"
+case $platform in
+Linux-x86_64)
+  install_package "truffleruby+graalvm-23.1.0" "https://github.com/oracle/truffleruby/releases/download/graal-23.1.0/truffleruby-community-jvm-23.1.0-linux-amd64.tar.gz#ecbbb61baf66c4584b2a2b7c75b515b448f13ac28dd98c1988c4dbc340b2a6b9" truffleruby
+  ;;
+Linux-aarch64)
+  install_package "truffleruby+graalvm-23.1.0" "https://github.com/oracle/truffleruby/releases/download/graal-23.1.0/truffleruby-community-jvm-23.1.0-linux-aarch64.tar.gz#2c7a9af681acaa83b58f40eb14893afd6c779560991d6f0e07ef80d577a08dbe" truffleruby
+  ;;
+Darwin-x86_64)
+  use_homebrew_openssl
+  install_package "truffleruby+graalvm-23.1.0" "https://github.com/oracle/truffleruby/releases/download/graal-23.1.0/truffleruby-community-jvm-23.1.0-macos-amd64.tar.gz#61cff8c5215668258f78a455e37549f9870df254c9c666f332a5302a7833e536" truffleruby
+  ;;
+Darwin-arm64)
+  use_homebrew_openssl
+  install_package "truffleruby+graalvm-23.1.0" "https://github.com/oracle/truffleruby/releases/download/graal-23.1.0/truffleruby-community-jvm-23.1.0-macos-aarch64.tar.gz#8bc4aceaefdf33feeee2ef002987915599b6babd85be03d5c6616d37d61779b0" truffleruby
+  ;;
+*)
+  colorize 1 "Unsupported platform: $platform"
+  return 1
+  ;;
+esac
