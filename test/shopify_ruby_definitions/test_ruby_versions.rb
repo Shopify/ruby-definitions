@@ -8,8 +8,14 @@ module ShopifyRubyDefinitions
     def test_ALL_VERSIONS
       assert_operator(RubyVersions::ALL_VERSIONS.length, :>, 0)
 
-      RubyVersions::ALL_VERSIONS.each do |v|
+      truffleruby_versions, cruby_versions = RubyVersions::ALL_VERSIONS.partition { |v| v.start_with?("truffleruby") }
+
+      cruby_versions.each do |v|
         assert_match(/\A(?:yjit\-)?\d+\.\d+\.\d+(?:\-[\w\-]+)?\z/, v)
+      end
+
+      truffleruby_versions.each do |v|
+        assert_match(/\Atruffleruby(?:\+graalvm)?\-\d+\.\d+\.\d+(?:\-ce)?\z/, v)
       end
     end
 
