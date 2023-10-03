@@ -1,0 +1,47 @@
+build_package_graalvm() {
+  platform="$(uname -s)-$(uname -m)"
+  case $platform in
+  Linux-x86_64)
+    GRAALVM_URL="https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-x64_bin.tar.gz"
+    ;;
+  Linux-aarch64)
+    GRAALVM_URL="https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_linux-aarch64_bin.tar.gz"
+    ;;
+  Darwin-x86_64)
+    #use_homebrew_openssl
+    GRAALVM_URL="https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_macos-x64_bin.tar.gz"
+    ;;
+  Darwin-arm64)
+    GRAALVM_URL="https://download.oracle.com/graalvm/21/latest/graalvm-jdk-21_macos-aarch64_bin.tar.gz"
+    ;;
+  *)
+    colorize 1 "Unsupported platform: $platform"
+    return 1
+    ;;
+  esac
+
+  mkdir ../graalvm
+  curl $GRAALVM_URL | tar xz - -C "../graalvm" --strip-components=1
+
+  if is_mac; then
+    export JAVA_HOME="$PWD/../graalvm/Contents/Home"
+  else
+    export JAVA_HOME="$PWD/../graalvm"
+  fi
+}
+
+build_package_jt() {
+    #unset JAVA_HOME
+    unset GEM_HOME GEM_PATH
+    JT_IMPORTS_DONT_ASK=true bin/jt build --env jvm
+    graalvm=$(bin/jt --use jvm graalvm-home)
+    mv "$graalvm" "$PREFIX_PATH"
+}
+
+if is_mac; then
+  use_homebrew_openssl
+else
+  install_package "openssl-3.1.3" "https://www.openssl.org/source/openssl-3.1.3.tar.gz#f0316a2ebd89e7f2352976445458689f80302093788c466692fb2a188b2eacf6" openssl --if needs_openssl_102_300
+fi
+
+install_git "truffleruby+graalvm-integration" "https://github.com/Shopify/truffleruby.git" "master" graalvm jt
