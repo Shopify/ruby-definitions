@@ -1,4 +1,4 @@
-# https://github.com/ruby/ruby/compare/ruby_3_2...Shopify:v3.2.2-pshopify18
+# https://github.com/ruby/ruby/compare/ruby_3_2...Shopify:v3.2.2-pshopify19
 
 # Based off `ruby_3_2`, with backports of:
 #   @byroot [ruby/set] Avoid the `block or return` pattern to save Proc allocations https://github.com/ruby/set/pull/29
@@ -68,6 +68,9 @@
 #   @peterzhu2118 Correctly calculate initial pages https://github.com/ruby/ruby/pull/8333
 #   @peterzhu2118 Incrementally mark even if we have free pages https://github.com/ruby/ruby/pull/8230
 #   @peterzhu2118 Pool more slots for large size pools https://github.com/ruby/ruby/pull/8249
+#   @maximecb YJIT: Add counter to measure how often we compile "cold" ISEQs  https://github.com/Shopify/ruby/pull/535
+#   @maximecb YJIT: add --yjit-cold-threshold, don't compile cold ISEQs https://github.com/ruby/ruby/pull/8522
+#   @byroot GC.free_all_empty_pages take a compact parameter
 
 install_package "openssl-3.1.2" "https://www.openssl.org/source/openssl-3.1.2.tar.gz#a0ce69b8b97ea6a35b96875235aa453b966ba3cba8af2de23657d8b6767d6539" openssl --if needs_openssl_102_300
-install_git "ruby-3.2.2-pshopify18" "https://github.com/Shopify/ruby.git" "v3.2.2-pshopify18" ldflags_dirs autoconf standard_build standard_install_with_bundled_gems verify_openssl
+install_git "ruby-3.2.2-pshopify19" "https://github.com/Shopify/ruby.git" "v3.2.2-pshopify19" ldflags_dirs autoconf standard_build standard_install_with_bundled_gems verify_openssl
