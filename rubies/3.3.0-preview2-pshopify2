@@ -1,0 +1,13 @@
+# https://github.com/ruby/ruby/compare/v3_3_0_preview2...Shopify:v3.3.0-preview2-pshopify2
+
+# Based off `v3_3_0_preview2`, with backports of:
+#   @nobu `.NOTPARALLEL` with prerequisites needs recent GNU Make https://github.com/ruby/ruby/pull/8489
+#   @k0kubun YJIT: Initialize Assembler vectors with capacity https://github.com/ruby/ruby/pull/8437
+#   @k0kubun YJIT: Initialize Vec with capacity for iterators https://github.com/ruby/ruby/pull/8439
+#   @k0kubun YJIT: Skip Insn::Comment and format! if disasm is disabled https://github.com/ruby/ruby/pull/8441
+#   @k0kubun YJIT: Avoid creating a vector in get_temp_regs() https://github.com/ruby/ruby/pull/8446
+#   @nobu Write crash report in $RUBY_CRASH_REPORT https://github.com/ruby/ruby/pull/8506
+#   @jhawthorn Fix ObjectSpace.dump with super() callinfo https://github.com/ruby/ruby/pull/8630
+
+install_package "openssl-3.1.2" "https://www.openssl.org/source/openssl-3.1.2.tar.gz#a0ce69b8b97ea6a35b96875235aa453b966ba3cba8af2de23657d8b6767d6539" openssl --if needs_openssl_102_300
+install_git "ruby-3.3.0-preview2-pshopify2" "https://github.com/Shopify/ruby.git" "v3.3.0-preview2-pshopify2" ldflags_dirs autoconf standard_build standard_install_with_bundled_gems verify_openssl
