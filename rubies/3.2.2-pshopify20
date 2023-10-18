@@ -1,0 +1,77 @@
+# https://github.com/ruby/ruby/compare/ruby_3_2...Shopify:v3.2.2-pshopify20
+
+# Based off `ruby_3_2`, with backports of:
+#   @byroot [ruby/set] Avoid the `block or return` pattern to save Proc allocations https://github.com/ruby/set/pull/29
+#   @peterzhu2118 Keep shared arrays WB protected https://github.com/ruby/ruby/pull/7224
+#   @peterzhu2118 Make BigDecimal WB protected https://github.com/ruby/bigdecimal/pull/248
+#   @XrXr YJIT String#+@ fixes https://github.com/ruby/ruby/pull/7328
+#   @byroot Add RUBY_GC_HEAP_INIT_SIZE_%d_SLOTS to pre-init pools granularly https://github.com/ruby/ruby/pull/7235
+#   @byroot Consider DATA objects without a mark function as protected https://github.com/ruby/ruby/pull/7263
+#   @byroot Implement Write Barrier for RMatch objects https://github.com/ruby/ruby/pull/7286
+#   @byroot Enable write barriers on File::Stat https://github.com/ruby/ruby/pull/7239
+#   @byroot Implement Write Barrier for Backtrace::Location https://github.com/ruby/ruby/pull/7240
+#   @byroot Mark "mapping_buffer" as write barrier protected https://github.com/ruby/ruby/pull/7238
+#   @byroot Mark "method" objects as protected by write barrier https://github.com/ruby/ruby/pull/7237
+#   @byroot Mark Encoding as Write Barrier protected Mark Encoding as Write Barrier protected
+#   @peterzhu2118 Make Time objects WB protected https://github.com/ruby/ruby/pull/7244
+#   @jhawthorn Use write barriers for Backtrace objects
+#   @peterzhu2118 Crash when malloc during GC
+#   @peterzhu2118 Fix crash when allocating classes with newobj hook
+#   @peterzhu2118 [Bug #19469] Fix crash when resizing generic iv list
+#   @byroot Implement Write Barrier for autoload_data
+#   @byroot Implement Write Barrier for autoload_table_type
+#   @k0kubun YJIT: Protect strings from GC on String#<<
+#   @tenderlove Use an st table for "too complex" objects
+#   @byroot Cache `Process.pid`
+#   @byroot thread_pthread.c: Use a `fork_gen` to protect against fork instead of getpid()
+#   @XrXr Fix write barrier order for klass to cme edge https://github.com/ruby/ruby/pull/7113
+#   @peterzhu2118 Ensure throw data is not set as cause https://github.com/ruby/ruby/pull/7696
+#   @peterzhu2118 Fix crash in rb_gc_register_address https://github.com/ruby/ruby/pull/7670
+#   @peterzhu2118 [Feature #19678] Don't immediately promote children of old objects https://github.com/ruby/ruby/pull/7821
+#   @k0kubun YJIT: Use rb_ivar_get at the end of ivar chains https://github.com/ruby/ruby/pull/7334
+#   @k0kubun / @maximecb / @XrXr YJIT: Add --yjit-pause and RubyVM::YJIT.resume https://github.com/ruby/ruby/pull/7609
+#   @k0kubun YJIT: Make ratio_in_yjit always available https://github.com/ruby/ruby/pull/8064
+#   @peterzhu2118 Store initial slots per size pool https://github.com/ruby/ruby/pull/8116
+#   @k0kubun YJIT: Implement throw instruction https://github.com/ruby/ruby/pull/7491
+#   @k0kubun YJIT: Fallback send instructions to vm_sendish https://github.com/ruby/ruby/pull/8106
+#   @k0kubun YJIT: Support entry for multiple PCs per ISEQ https://github.com/ruby/ruby/pull/7535
+#   @k0kubun YJIT: Distinguish exit and fallback reasons for send https://github.com/ruby/ruby/pull/8159
+#   @k0kubun YJIT: Use dynamic dispatch for megamorphic send https://github.com/ruby/ruby/pull/8125
+#   @k0kubun YJIT: Compile exception handlers https://github.com/ruby/ruby/pull/8171
+#   @k0kubun YJIT: Introduce RubyVM::YJIT.stats_string https://github.com/ruby/ruby/pull/7857
+#   @k0kubun YJIT: Don't side-exit on too-complex shapes https://github.com/ruby/ruby/pull/7298
+#   @k0kubun YJIT: Distinguish exit and fallback reasons for invokesuper/invokeblock https://github.com/ruby/ruby/pull/8194
+#   @jhawthorn YJIT: invokesuper: Remove cme mid matching check https://github.com/ruby/ruby/pull/7740
+#   @k0kubun YJIT: Fallback megamorphic super/yield to dynamic dispatch https://github.com/ruby/ruby/pull/8197
+#   @maximecb YJIT: add stats for ratio of versions per block https://github.com/ruby/ruby/pull/7653
+#   @XrXr YJIT: YJIT: Fix false object collection when setting ivar https://github.com/ruby/ruby/pull/7718
+#   @peterzhu2118 Add REMEMBERED_WB_UNPROTECTED_OBJECTS_LIMIT_RATIO https://github.com/ruby/ruby/pull/7577
+#   @k0kubun YJIT: Fallback setivar if the next shape is too complex ruby/ruby#8152
+#   @byroot YJIT: Fallback setivar if the receiver isn't T_OBJECT ruby/ruby#8160
+#   @maximecb YJIT: handle expandarray_rhs_too_small case ruby/ruby#8161
+#   @maximecb YJIT: add jb (unsigned less-than) instruction to backend ruby/ruby#8168
+#   @maximecb YJIT: guard for array_len >= num in expandarray ruby/ruby#8169
+#   @k0kubun YJIT: Implement checkmatch instruction ruby/ruby#8203
+#   @maximecb YJIT: increase max chain depth for expandarray ruby/ruby#8205
+#   @k0kubun YJIT: Support ifunc on invokeblock ruby/ruby#7233
+#   @k0kubun YJIT: Allow VM_CALL_ARGS_BLOCKARG on invokesuper ruby/ruby#8198
+#   @k0kubun YJIT: Implement GET_BLOCK_HANDLER() for invokesuper ruby/ruby#8206
+#   @k0kubun YJIT: Refactor getlocal and setlocal insns ruby/ruby#7320
+#   @maximecb YJIT: implement side chain fallback for setlocal to avoid exiting ruby/ruby#8227
+#   @byroot YJIT: Stop incrementing jit_entry_calls once threshold is hit https://github.com/ruby/ruby/pull/8259
+#   @peterzhu2118 Implement GC.free_all_empty_pages
+#   @nobu / @byroot Write crash report in $RUBY_CRASH_REPORT https://bugs.ruby-lang.org/issues/19790
+#   @k0kubun YJIT: Make compiled_* stats available by default https://github.com/ruby/ruby/pull/8379
+#   @k0kubun YJIT: Add compilation time counter https://github.com/ruby/ruby/pull/8417
+#   @k0kubun YJIT: Make yjit_alloc_size available by default https://github.com/ruby/ruby/pull/8426
+#   @peterzhu2118 Fix growth in minor GC when we have initial slots https://github.com/ruby/ruby/pull/8310
+#   @peterzhu2118 Correctly calculate initial pages https://github.com/ruby/ruby/pull/8333
+#   @peterzhu2118 Incrementally mark even if we have free pages https://github.com/ruby/ruby/pull/8230
+#   @peterzhu2118 Pool more slots for large size pools https://github.com/ruby/ruby/pull/8249
+#   @maximecb YJIT: Add counter to measure how often we compile "cold" ISEQs  https://github.com/Shopify/ruby/pull/535
+#   @maximecb YJIT: add --yjit-cold-threshold, don't compile cold ISEQs https://github.com/ruby/ruby/pull/8522
+#   @byroot GC.free_all_empty_pages take a compact parameter
+#   @XrXr / @k0kubun / @maximecb YJIT: add --yjit-disable-code-gc
+
+install_package "openssl-3.1.2" "https://www.openssl.org/source/openssl-3.1.2.tar.gz#a0ce69b8b97ea6a35b96875235aa453b966ba3cba8af2de23657d8b6767d6539" openssl --if needs_openssl_102_300
+install_git "ruby-3.2.2-pshopify20" "https://github.com/Shopify/ruby.git" "v3.2.2-pshopify20" ldflags_dirs autoconf standard_build standard_install_with_bundled_gems verify_openssl
