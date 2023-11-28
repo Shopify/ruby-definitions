@@ -1,0 +1,29 @@
+# https://github.com/ruby/ruby/compare/v3_3_0_preview3...Shopify:v3.3.0-preview3-pshopify1
+
+# Based off `v3_3_0_preview3`, with backports of:
+#   @XrXr Fix regex match cache out-of-bounds access https://github.com/ruby/ruby/pull/8929
+#   @peterzhu2118 Remove SHAPE_CAPACITY_CHANGE shapes https://github.com/ruby/ruby/pull/8897
+#   @peterzhu2118 Fix corruption when out of shape during ivar remove https://github.com/ruby/ruby/pull/8941
+#   @XrXr Fix ordering for auto compaction in get_overloaded_cme() https://github.com/ruby/ruby/pull/8940
+#   @jeremyevans Ensure keyword splat method argument is hash https://github.com/ruby/ruby/pull/8804
+#   @peterzhu2118 Fix crash when iterating over generic ivars
+#   @casperisfine rb_evict_ivars_to_hash: get rid of the shape parameter https://github.com/ruby/ruby/pull/8933
+#   @peterzhu2118 Fix crash when evacuating generic ivar https://github.com/ruby/ruby/pull/8960
+#   @tenderlove Don't try compacting ivars on Classes that are "too complex" https://github.com/ruby/ruby/pull/8958
+#   @peterzhu2118 Fix memory leak when evacuating generic ivars https://github.com/ruby/ruby/pull/8980
+#   @XrXr Fix off-by-one with RubyVM::Shape.exhaust_shapes https://github.com/ruby/ruby/pull/9008
+#   @k0kubun YJIT: Avoid a register spill on arm64 https://github.com/ruby/ruby/pull/9014
+#   @byroot vm_setivar_slowpath: only optimize T_OBJECT https://github.com/ruby/ruby/pull/9017
+#   @peterzhu2118 Fix compacting during evacuation of generic ivars https://github.com/ruby/ruby/pull/8982
+#   @k0kubun YJIT: Fix jmp_ptr_bytes on x86_64 https://github.com/ruby/ruby/pull/9016
+#   @k0kubun YJIT: Apply patches ignoring page_end_reserve https://github.com/ruby/ruby/pull/9015
+#   @XrXr Fix rp(too_complex_t_object) tripping assert https://github.com/ruby/ruby/pull/9021
+#   @XrXr Fix crash for too_complex RCLASSes + save unnecessary work from naming confusion https://github.com/ruby/ruby/pull/9026
+#   @KJTsanaktsidis Mark cc->cme_ for refinement callcaches as well https://github.com/ruby/ruby/pull/8899
+#   @peterzhu2118 Fix compaction for generic ivars https://github.com/ruby/ruby/pull/9030
+#   @peterzhu2118 Fix compaction during ary_make_partial https://github.com/ruby/ruby/pull/9042
+#   @peterzhu2118 Guard match from GC when scanning string https://github.com/ruby/ruby/pull/9045
+#   @XrXr Fix cache incoherency for ME resolved through VM_METHOD_TYPE_REFINED https://github.com/ruby/ruby/pull/9034
+
+install_package "openssl-3.1.2" "https://www.openssl.org/source/openssl-3.1.2.tar.gz#a0ce69b8b97ea6a35b96875235aa453b966ba3cba8af2de23657d8b6767d6539" openssl --if needs_openssl_102_300
+install_git "ruby-3.3.0-preview3-pshopify1" "https://github.com/Shopify/ruby.git" "v3.3.0-preview3-pshopify1" ldflags_dirs autoconf standard_build standard_install_with_bundled_gems verify_openssl
