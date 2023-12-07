@@ -1,0 +1,14 @@
+build_package_jt() {
+    unset JAVA_HOME GEM_HOME GEM_PATH
+    JT_IMPORTS_DONT_ASK=true bin/jt build --env native
+    graalvm=$(bin/jt --use native graalvm-home)
+    mv "$graalvm" "$PREFIX_PATH"
+}
+
+if is_mac; then
+  use_homebrew_openssl
+else
+  install_package "openssl-3.1.3" "https://www.openssl.org/source/openssl-3.1.3.tar.gz#f0316a2ebd89e7f2352976445458689f80302093788c466692fb2a188b2eacf6" openssl --if needs_openssl_102_300
+fi
+
+install_git "truffleruby-integration" "https://github.com/Shopify/truffleruby.git" "master" jt
