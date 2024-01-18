@@ -1,0 +1,19 @@
+platform="$(uname -s)-$(uname -m)"
+case $platform in
+Linux-x86_64)
+  install_package "truffleruby-gftc-dev" "https://github.com/graalvm/oracle-graalvm-dev-builds/releases/latest/download/truffleruby-dev-linux-amd64.tar.gz" truffleruby
+  ;;
+Linux-aarch64)
+  install_package "truffleruby-gftc-dev" "https://github.com/graalvm/oracle-graalvm-dev-builds/releases/latest/download/truffleruby-dev-linux-aarch64.tar.gz" truffleruby
+  ;;
+Darwin-x86_64)
+  install_package "truffleruby-gftc-dev" "https://github.com/graalvm/oracle-graalvm-dev-builds/releases/latest/download/truffleruby-dev-macos-amd64.tar.gz" truffleruby
+  ;;
+Darwin-arm64)
+  install_package "truffleruby-gftc-dev" "https://github.com/graalvm/oracle-graalvm-dev-builds/releases/latest/download/truffleruby-dev-macos-aarch64.tar.gz" truffleruby
+  ;;
+*)
+  colorize 1 "Unsupported platform: $platform"
+  return 1
+  ;;
+esac

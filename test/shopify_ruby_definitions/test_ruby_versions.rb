@@ -15,7 +15,7 @@ module ShopifyRubyDefinitions
       end
 
       truffleruby_versions.each do |v|
-        assert_match(/\Atruffleruby(?:\+graalvm)?\-\d+\.\d+\.\d+(?:\-ce)?\z/, v)
+        assert_match(/\Atruffleruby(?:\+graalvm|-gftc)?(\-\d+\.\d+\.\d+|-dev)(?:\-ce)?\z/, v)
       end
     end
 
