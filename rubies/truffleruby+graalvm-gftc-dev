@@ -1,0 +1,58 @@
+sort_release_urls () {
+  # With release names like /^(jdk-)?24.1.0-dev-20240207_2228$/
+  # strip everything up to the last dash so we can use the date as the sort field.
+  sed 's/\(.\{1,\}-\([0-9_]\{1,\}\)\)$/\2;\1/' | sort -rn | sed 's/.\{1,\};//'
+}
+
+find_asset_url () {
+  local repo="$1" filename="$2"
+  local releases_prefix="https://github.com/${repo}/releases"
+  local assets_urls assets_url path
+  local sort_release_urls=sort_release_urls
+  type -t $sort_release_urls >/dev/null || sort_release_urls=cat
+
+  # The releases page hides assets behind an "expanded_assets" url
+  # so we gather those, sort them according to "sort_release_urls" and store
+  # them in an array to loop over next.
+  IFS=$'\n' read -d '' -r -a assets_urls < <(http get "$releases_prefix" - | grep -oE "$releases_prefix/expanded_assets/[^\"]+" | $sort_release_urls)
+
+  # For each release look in the assets output for a download link to the specified filename.
+  for assets_url in "${assets_urls[@]}"; do
+    path="$(http get "$assets_url" - | grep -m1 -oE "/$repo/releases/download/[^/]+/$filename")"
+    if [[ -n "$path" ]]; then
+      echo "https://github.com/$path"
+      return 0
+    fi
+  done
+
+  echo "Failed to find $repo release containing $filename" >&2
+  return 1
+}
+
+truffleruby_asset_url () {
+  find_asset_url "graalvm/oracle-graalvm-dev-builds" "$1"
+}
+
+platform="$(uname -s)-$(uname -m)"
+case $platform in
+Linux-x86_64)
+  truffleruby_url="$(truffleruby_asset_url "truffleruby-jvm-dev-linux-amd64.tar.gz")" || return $?
+  install_package "truffleruby+graalvm-gftc-dev" "$truffleruby_url" truffleruby
+  ;;
+Linux-aarch64)
+  truffleruby_url="$(truffleruby_asset_url "truffleruby-jvm-dev-linux-aarch64.tar.gz")" || return $?
+  install_package "truffleruby+graalvm-gftc-dev" "$truffleruby_url" truffleruby
+  ;;
+Darwin-x86_64)
+  truffleruby_url="$(truffleruby_asset_url "truffleruby-jvm-dev-macos-amd64.tar.gz")" || return $?
+  install_package "truffleruby+graalvm-gftc-dev" "$truffleruby_url" truffleruby
+  ;;
+Darwin-arm64)
+  truffleruby_url="$(truffleruby_asset_url "truffleruby-jvm-dev-macos-aarch64.tar.gz")" || return $?
+  install_package "truffleruby+graalvm-gftc-dev" "$truffleruby_url" truffleruby
+  ;;
+*)
+  colorize 1 "Unsupported platform: $platform"
+  return 1
+  ;;
+esac
