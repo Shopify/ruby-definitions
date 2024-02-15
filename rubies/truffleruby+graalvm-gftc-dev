@@ -36,20 +36,20 @@ truffleruby_asset_url () {
 platform="$(uname -s)-$(uname -m)"
 case $platform in
 Linux-x86_64)
-  truffleruby_url="$(truffleruby_asset_url "truffleruby-dev-linux-amd64.tar.gz")" || return $?
-  install_package "truffleruby-gftc-dev" "$truffleruby_url" truffleruby
+  truffleruby_url="$(truffleruby_asset_url "truffleruby-jvm-dev-linux-amd64.tar.gz")" || return $?
+  install_package "truffleruby+graalvm-gftc-dev" "$truffleruby_url" truffleruby
   ;;
 Linux-aarch64)
-  truffleruby_url="$(truffleruby_asset_url "truffleruby-dev-linux-aarch64.tar.gz")" || return $?
-  install_package "truffleruby-gftc-dev" "$truffleruby_url" truffleruby
+  truffleruby_url="$(truffleruby_asset_url "truffleruby-jvm-dev-linux-aarch64.tar.gz")" || return $?
+  install_package "truffleruby+graalvm-gftc-dev" "$truffleruby_url" truffleruby
   ;;
 Darwin-x86_64)
-  truffleruby_url="$(truffleruby_asset_url "truffleruby-dev-macos-amd64.tar.gz")" || return $?
-  install_package "truffleruby-gftc-dev" "$truffleruby_url" truffleruby
+  truffleruby_url="$(truffleruby_asset_url "truffleruby-jvm-dev-macos-amd64.tar.gz")" || return $?
+  install_package "truffleruby+graalvm-gftc-dev" "$truffleruby_url" truffleruby
   ;;
 Darwin-arm64)
-  truffleruby_url="$(truffleruby_asset_url "truffleruby-dev-macos-aarch64.tar.gz")" || return $?
-  install_package "truffleruby-gftc-dev" "$truffleruby_url" truffleruby
+  truffleruby_url="$(truffleruby_asset_url "truffleruby-jvm-dev-macos-aarch64.tar.gz")" || return $?
+  install_package "truffleruby+graalvm-gftc-dev" "$truffleruby_url" truffleruby
   ;;
 *)
   colorize 1 "Unsupported platform: $platform"
