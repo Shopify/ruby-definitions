@@ -1,3 +1,10 @@
+http_get_stdout () {
+  local f="$(mktemp "ruby-build.http.XXXXXX")"
+  http get "$1" "$f"
+  cat "$f"
+  rm -f "$f"
+}
+
 sort_release_urls () {
   # With release names like /^(jdk-)?24.1.0-dev-20240207_2228$/
   # strip everything up to the last dash so we can use the date as the sort field.
@@ -14,11 +21,11 @@ find_asset_url () {
   # The releases page hides assets behind an "expanded_assets" url
   # so we gather those, sort them according to "sort_release_urls" and store
   # them in an array to loop over next.
-  IFS=$'\n' read -d '' -r -a assets_urls < <(http get "$releases_prefix" - | grep -oE "$releases_prefix/expanded_assets/[^\"]+" | $sort_release_urls)
+  IFS=$'\n' read -d '' -r -a assets_urls < <(http_get_stdout "$releases_prefix" | grep -oE "$releases_prefix/expanded_assets/[^\"]+" | $sort_release_urls)
 
   # For each release look in the assets output for a download link to the specified filename.
   for assets_url in "${assets_urls[@]}"; do
-    path="$(http get "$assets_url" - | grep -m1 -oE "/$repo/releases/download/[^/]+/$filename")"
+    path="$(http_get_stdout "$assets_url" | grep -m1 -oE "/$repo/releases/download/[^/]+/$filename")"
     if [[ -n "$path" ]]; then
       echo "https://github.com/$path"
       return 0
