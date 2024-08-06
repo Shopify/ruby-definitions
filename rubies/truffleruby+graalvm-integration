@@ -1,0 +1,8 @@
+build_package_jt() {
+    unset GEM_HOME GEM_PATH JAVA_HOME
+    JT_IMPORTS_DONT_ASK=true bin/jt build --env jvm
+    graalvm=$(bin/jt --use jvm ruby-home)
+    mv "$graalvm" "$PREFIX_PATH"
+}
+
+install_git "truffleruby+graalvm-integration" "https://github.com/Shopify/truffleruby.git" "integration" graalvm jt
