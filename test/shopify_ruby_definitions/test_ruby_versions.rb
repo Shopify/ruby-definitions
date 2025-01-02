@@ -11,7 +11,16 @@ module ShopifyRubyDefinitions
       truffleruby_versions, cruby_versions = RubyVersions::ALL_VERSIONS.partition { |v| v.start_with?("truffleruby") }
 
       cruby_versions.each do |v|
-        assert_match(/\A(?:yjit\-)?\d+\.\d+\.\d+(?:\-[\w\-]+)?\z/, v)
+        assert_match(
+          %r{
+            \A
+            (?:yjit\-)?
+            \d+\.\d+\.\d+ # match version (e.g. 3.4.0)
+            (?:\-[\w\-]+)?
+            \z
+          }x,
+          v,
+        )
       end
 
       truffleruby_versions.each do |v|
