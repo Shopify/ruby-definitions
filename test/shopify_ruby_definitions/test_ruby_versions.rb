@@ -16,7 +16,9 @@ module ShopifyRubyDefinitions
             \A
             (?:yjit\-)?
             \d+\.\d+\.\d+ # match version (e.g. 3.4.0)
-            (?:\-[\w\-]+)?
+            (?:\-preview\d*)? # match -preview optionally
+                              # preview tag must be before the pshopify tag
+            (?:\-pshopify\d*)? # match -pshopify optionally
             \z
           }x,
           v,
