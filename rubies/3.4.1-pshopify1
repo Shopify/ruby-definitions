@@ -1,6 +1,6 @@
 # https://github.com/ruby/ruby/compare/v3_4_1...Shopify:v3.4.1-pshopify1
 
-# Based off `ruby_3_2`, with backports of:
+# Based off v3.4.1, with backports of:
 #   @xrxr YJIT: Initialize locals in ISeqs defined with ... https://github.com/ruby/ruby/pull/12660
 
 install_package "openssl-3.1.4" "https://www.openssl.org/source/openssl-3.1.4.tar.gz#840af5366ab9b522bde525826be3ef0fb0af81c6a9ebd84caa600fea1731eee3" openssl --if needs_openssl:1.0.2-3.x.x
