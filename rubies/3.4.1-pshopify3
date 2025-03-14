@@ -1,10 +1,9 @@
-# https://github.com/ruby/ruby/compare/v3_4_2...Shopify:v3.4.2-pshopify1
+# https://github.com/Shopify/ruby/compare/v3.4.1-pshopify2...Shopify:v3.4.1-pshopify3
 
-# Based off v3.4.2, with backports of:
-#   @jhawthorn Replace tombstone when converting AR to ST hash https://github.com/ruby/ruby/pull/12852
+# Based off v3.4.1, with backports of:
 #   * Push a real iseq in rb_vm_push_frame_fname()
 #   * Have `ast` live longer in ISeq.compile_file to fix GC stress crash
 #   *   https://github.com/ruby/ruby/pull/12930
 
 install_package "openssl-3.1.4" "https://www.openssl.org/source/openssl-3.1.4.tar.gz#840af5366ab9b522bde525826be3ef0fb0af81c6a9ebd84caa600fea1731eee3" openssl --if needs_openssl:1.0.2-3.x.x
-install_git "ruby-3.4.2-pshopify1" "https://github.com/Shopify/ruby.git" "v3.4.2-pshopify1" autoconf enable_shared standard
+install_git "ruby-3.4.1-pshopify3" "https://github.com/Shopify/ruby.git" "v3.4.1-pshopify3" autoconf enable_shared standard
