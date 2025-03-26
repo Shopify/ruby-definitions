@@ -1,0 +1,7 @@
+# https://github.com/Shopify/ruby/compare/v3.4.2-pshopify2...Shopify:v3.4.2-pshopify3
+
+# Based off v3.4.2-pshopify2, with the following changes:
+#   *  Fix handling of `error`/`errno` in `io_internal_wait`. [Bug #21195]
+
+install_package "openssl-3.1.4" "https://www.openssl.org/source/openssl-3.1.4.tar.gz#840af5366ab9b522bde525826be3ef0fb0af81c6a9ebd84caa600fea1731eee3" openssl --if needs_openssl:1.0.2-3.x.x
+install_git "ruby-3.4.2-pshopify3" "https://github.com/Shopify/ruby.git" "v3.4.2-pshopify3" autoconf enable_shared standard
