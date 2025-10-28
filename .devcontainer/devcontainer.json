@@ -1,0 +1,7 @@
+{
+	"name": "ruby-definitions",
+	"image": "ghcr.io/rails/devcontainer/images/ruby:3.3.0",
+	"features": {
+		"ghcr.io/devcontainers/features/github-cli:1": {}
+	}
+}
