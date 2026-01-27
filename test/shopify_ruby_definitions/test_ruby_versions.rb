@@ -19,6 +19,7 @@ module ShopifyRubyDefinitions
             (?:\-preview\d*)? # match -preview optionally
                               # preview tag must be before the pshopify tag
             (?:\-pshopify\d*)? # match -pshopify optionally
+            (?:\-modgc)? # match -modgc for modular GC builds
             \z
           }x,
           v,
