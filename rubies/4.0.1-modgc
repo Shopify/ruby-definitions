@@ -25,4 +25,4 @@ build_package_modular_gc_install() {
 package_option ruby configure --with-modular-gc="$PREFIX_PATH/lib/ruby/gc"
 
 install_package "openssl-3.4.0" "https://github.com/openssl/openssl/releases/download/openssl-3.4.0/openssl-3.4.0.tar.gz#e15dda82fe2fe8139dc2ac21a36d4ca01d5313c75f99f46c4e8a27571b5486cd" openssl --if needs_openssl:1.0.2-3.x.x
-install_git "ruby-4.0.1-modgc" "https://github.com/Shopify/ruby.git" "e04267a14b1a5dea2d2c368e48d41bd3db441f4f" autoconf enable_shared standard modular_gc_install
+install_git "ruby-4.0.1-modgc" "https://github.com/Shopify/ruby.git" "v4.0.1" autoconf enable_shared standard modular_gc_install
