@@ -1,0 +1,28 @@
+# Build a Ruby version with modular GC support
+# Built from Shopify/ruby fork at the commit corresponding to upstream ruby/ruby v3.4.7 tag.
+# Upstream tag: https://github.com/ruby/ruby/releases/tag/
+# Commit: 7482835d0b5c9f55662fb7c6586f456354e2b66e
+#
+# This build enables Ruby's experimental modular GC feature, allowing
+# alternative GC implementations to be loaded at runtime.
+#
+# MODULAR GC USAGE:
+#   Ruby is usable as normal in this build, it will use the default Ruby garbage
+#   collector and behave as expected.
+#
+#   To use a modular GC, you need a GC compiled as a shared object with the name
+#   librubygc.<name>.so in the modular GC directory ($PREFIX/lib/ruby/gc/).
+#
+#   Load it at runtime with:
+#     RUBY_GC_LIBRARY=<name> ruby
+#
+
+build_package_modular_gc_install() {
+  log_info "Building modular GC (default)..."
+  capture_command make install-modular-gc MODULAR_GC=default
+}
+
+package_option ruby configure --with-modular-gc="$PREFIX_PATH/lib/ruby/gc"
+
+install_package "openssl-3.1.4" "https://www.openssl.org/source/openssl-3.1.4.tar.gz#840af5366ab9b522bde525826be3ef0fb0af81c6a9ebd84caa600fea1731eee3" openssl --if needs_openssl:1.0.2-3.x.x
+install_git "ruby-3.4.7-modgc" "https://github.com/Shopify/ruby.git" "v3.4.7-pshopify1" autoconf enable_shared standard modular_gc_install
