@@ -1,0 +1,19 @@
+# https://github.com/Shopify/ruby/compare/v3_4_8...Shopify:v3.4.8-pshopify2
+
+# Based off v3.4.8, with several backports:
+  # 5a73339c5b Fix integer overflow checks in enumerator
+  # 981097a739 merge revision(s) 8a586af33b59cae93a1bee13c39e87dd087a4a6b: [Backport #21838]
+  # 02eb4eec87 Add pushtoarray insn to fix segfault with forwarding + splat
+  # 86e65fa167 merge revision(s) 4e0bb58a0a374b40b7691e7b7aa88e759a0fc9f2: [Backport #21811]
+  # d5ca99a71c merge revision(s) d7a6ff8224519005d2deeb3f4e98689a8a0835ad: [Backport #21819]
+  # 8fa17ea3b2 merge revision(s) 19e539c9ee1701b34189fa0c1feb942adeb0e326: [Backport #21814]
+  # 5592067785 merge revision(s) 86320a53002a3adaf35ad7434c70e86747a8b345: [Backport #21326] [Backport #21807]
+  # 28db1b5c3d merge revision(s) 61bab1889048f758396acf671c9797d6bc52504b: [Backport #21757]
+  # c409e343fb merge revision(s) 99ff0224a564b59df3ba8fbd7911dd41a7fdde34: [Backport #21757]
+  # 45100545b0 merge revision(s) f430fbbfacea5690d790dd9060ca4118431fc2fb, c353b625297162024b5a80480664e599dd49a294: [Backport #21787]
+  # 2bbc06e21d merge revision(s) d209e6f1c0a93ad3ce1cc64dd165a6b67672614d: [Backport #21715]
+  # c04363c0a0 Remove k0kubun from CODEOWNERS
+  # 2bf88ac15d make-snapshot: Fix Psych::DisallowedClass with newer psych
+
+install_package "openssl-3.0.18" "https://github.com/openssl/openssl/releases/download/openssl-3.0.18/openssl-3.0.18.tar.gz#d80c34f5cf902dccf1f1b5df5ebb86d0392e37049e5d73df1b3abae72e4ffe8b" openssl --if needs_openssl:1.0.2-3.x.x
+install_git "ruby-3.4.8-pshopify2" "https://github.com/Shopify/ruby.git" "v3.4.8-pshopify2" autoconf enable_shared standard
