@@ -1,0 +1,8 @@
+# https://github.com/Shopify/ruby/compare/v3_4_8...Shopify:v3.4.8-pshopify1
+
+# Based off v3.4.8, with the following changes:
+#   * Fix integer overflow checks in enumerator
+#     (https://github.com/ruby/ruby/pull/15829)
+
+install_package "openssl-3.0.18" "https://github.com/openssl/openssl/releases/download/openssl-3.0.18/openssl-3.0.18.tar.gz#d80c34f5cf902dccf1f1b5df5ebb86d0392e37049e5d73df1b3abae72e4ffe8b" openssl --if needs_openssl:1.0.2-3.x.x
+install_git "ruby-3.4.8-pshopify1" "https://github.com/Shopify/ruby.git" "v3.4.8-pshopify1" autoconf enable_shared standard
