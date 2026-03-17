@@ -1,0 +1,61 @@
+name: Build changed definitions
+
+on:
+  pull_request:
+    paths:
+      - 'rubies/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build changed definitions
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed definitions
+        id: changed
+        run: |
+          files=$(git diff --name-only --diff-filter=ACMR origin/${{ github.base_ref }}...HEAD -- rubies/)
+          defs=$(echo "$files" | sed 's|^rubies/||' | grep -v '^truffleruby' | grep -v '^$' || true)
+          if [ -z "$defs" ]; then
+            echo "No CRuby definitions changed"
+            echo "has_definitions=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "Changed definitions:"
+            echo "$defs"
+            echo "has_definitions=true" >> "$GITHUB_OUTPUT"
+            echo "$defs" > /tmp/changed-definitions.txt
+          fi
+
+      - name: Install build dependencies
+        if: steps.changed.outputs.has_definitions == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf bison build-essential \
+            libssl-dev libyaml-dev libreadline-dev libffi-dev libgdbm-dev libncurses-dev zlib1g-dev
+
+      - name: Install ruby-build
+        if: steps.changed.outputs.has_definitions == 'true'
+        run: |
+          git clone --depth 1 https://github.com/rbenv/ruby-build.git /tmp/ruby-build
+          sudo /tmp/ruby-build/install.sh
+
+      - name: Build definitions
+        if: steps.changed.outputs.has_definitions == 'true'
+        run: |
+          failed=0
+          while IFS= read -r def; do
+            echo "::group::Build $def"
+            if RUBY_BUILD_DEFINITIONS=$GITHUB_WORKSPACE/rubies \
+                ruby-build "$def" "/tmp/ruby-$def"; then
+              "/tmp/ruby-$def/bin/ruby" --version
+            else
+              echo "::error::Build failed for $def"
+              failed=1
+            fi
+            echo "::endgroup::"
+          done < /tmp/changed-definitions.txt
+          exit "$failed"
