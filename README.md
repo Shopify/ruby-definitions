@@ -51,3 +51,29 @@ If you are using another ruby version manager or no manager at all:
     $ shopify-ruby resolve 3.2
     3.2.2-pshopify4
     ```
+
+## Creating a new pshopify definition
+
+A rake task automates the creation of new pshopify definition files:
+
+```bash
+$ rake pshopify:create              # uses latest stable Ruby from ruby-build
+$ rake "pshopify:create[4.0.2]"     # uses a specific version
+```
+
+This will:
+- Default to the latest stable CRuby version if none is specified
+- Determine the next pshopify number (e.g. `4.0.2-pshopify2` if `4.0.2-pshopify1` already exists)
+- Verify the branch exists on [Shopify/ruby](https://github.com/Shopify/ruby)
+- Read the openssl line from the upstream ruby-build definition
+- Fetch the changelog from the GitHub compare API
+- Generate the definition file in `rubies/`
+
+### Prerequisites
+
+- The [`gh` CLI](https://cli.github.com/) must be installed and authenticated
+- A local [ruby-build](https://github.com/rbenv/ruby-build) checkout must be available. The task searches for sibling directories matching `*ruby-build`, or you can set `RUBY_BUILD_PATH`:
+
+```bash
+$ RUBY_BUILD_PATH=~/src/ruby-build rake "pshopify:create[4.0.2]"
+```
