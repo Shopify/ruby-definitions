@@ -164,7 +164,7 @@ class PshopifyDefinitionCreator
 
     lines << ""
     lines << openssl_line
-    lines << "install_git \"ruby-#{@pshopify_version}\" \"#{SHOPIFY_RUBY_GIT_URL}\" \"#{@tag}\"" \
+    lines << "install_git \"ruby-#{@pshopify_version}\" \"#{SHOPIFY_RUBY_GIT_URL}\" \"#{@tag}\" " \
       "autoconf enable_shared standard"
     lines << ""
 
