@@ -1,0 +1,83 @@
+# https://github.com/Shopify/ruby/compare/v4.0.5...Shopify:v4.0.5-pshopify1
+
+# Based off v4.0.5, with the following changes:
+#   * Skip test_fiber_pool_stack_acquire_failure on RubyCI
+#   * Merge openssl-4.0.1
+#   * Merge openssl-4.0.2
+#   * [Bug #22070] Fix segfault in `Thread.each_caller_location`
+#   * windows: Extract new env lines by pwsh
+#   * windows: Skip installing vcpkg if manifest mode is already available
+#   * windows: Use the default vcpkg root
+#   * Add tarball-test workflow for snapshot tarball CI
+#   * Merge branch 'ruby_4_0' into v4.0.5
+#   * Dispatch tarball-test from master schedule instead of cron
+#   * Inline modern Windows configuration in tarball-windows.yml
+#   * Use inputs.archname instead of `snapshot-*` glob in tarball-test
+#   * Pass archname through env to avoid template injection
+#   * Trim tarball-* reusable inputs
+#   * Use atomics for kwargs reference count
+#   * Fix defined? for protected methods defined in a module
+#   * [Backport #22072] Fix rb_cvar_set for multi-Ractor
+#   * YJIT: Fix local register mapping overflow
+#   * Fix GC compaction for compare-by-identity sets
+#   * Backport https://github.com/ruby/ruby/pull/17072
+#   * Reuse the script to save stats of HOME
+#   * Simplify save-stats.rb without Pathname
+#   * Skip tarball tests on documents-only commits
+#   * Fetch the base branch only
+#   * Set the upstream to the base branch instead of `master`
+#   * Restrict GITHUB_TOKEN permissions in tarball reusable workflows
+#   * Do not persist credentials in tarball-test checkout
+#   * Pass only the required secrets to tarball reusable workflows
+#   * Run macOS CI on macos-26 by default
+#   * Inline the skip-detection run command
+#   * Build full path for HOME stat snapshot
+#   * Merge RubyGems/Bundler 4.0.11
+#   * Merge RubyGems/Bundler 4.0.12
+#   * Merge RubyGems/Bundler 4.0.13
+#   * Use stack callinfo/calldata for super dispatch
+#   * [Bug #22092] Improve `Array#sum` when the initial value is a `Float`
+#   * Move the test for [Bug #14635]
+#   * Refine `rb_flo_round_by_rational`
+#   * [Bug #22079] Fix `Float#ceil` and `Float#floor` edge cases
+#   * Fix mutex_free so it doesn't call into Ruby code during GC
+#   * Add and use rb_ivar_foreach_buffered
+#   * Avoid reading TypedData type after dfree
+#   * Fix use-after-poison in compile.c and prism_compile.c
+#   * compile.c: fix dupstring-of-Regexp from folded /o regexp
+#   * Bump net-imap to 0.6.4.1
+#   * tarball-macos: Use an isolated prefix on macos-15-intel
+#   * Run macOS CI on macos-26 by default
+#   * Keep gcc-14 variant on macos-15
+#   * Ruby::Box fix stale cached values for exception-related global variables ($! and $@)
+#   * Fix bug: the Slowpath doesn't work correctly because of double increment
+#   * [Bug #21881] Separate the master and root box
+#   * Don't use obj_id in Box classext_cow_classes
+#   * test_box.rb: extend timeout for Windows CI (#16963)
+#   * Fix perf. of RCLASS_EXT_WRITABLE
+#   * Make `rb_load_entrypoint` accept two arguments directly
+#   * [Box] dump the effective box on the control frame info
+#   * [Box] Invalidate the method cache of the owner too
+#   * [Box] Invalidate callable me on per-box origin IClasses
+#   * [Box] make the tmp array safe
+#   * YJIT: Register builtin CMEs before prelude to avoid prepend crash
+#   * Add regression test for module prepend crash
+#   * Simplify Kernel prepend test
+#   * ZJIT: Register builtin CMEs before prelude to avoid prepend crash
+#   * [Box] Unroll the changes using features for 4.1
+#   * Box: pend the CI failure on Windows
+#   * [Prism] RB_GC_GUARDs needed in pm_parse_string
+#   * Fix ar_find_entry_hint() to handle #eql? or another thread changing bound or converting to st_table
+#   * [ruby/cgi] Fix escape_html/h aliases to use C extension instead of pure Ruby fallback
+#   * [ruby/cgi] Fix unescapeHTML CompatibilityError in pure-Ruby fallback
+#   * [ruby/error_highlight] Return nil instead of raising NotImplementedError for def/lambda/block args
+#   * [ruby/error_highlight] Refactor type error to be more consistent
+#   * [ruby/error_highlight] Bump version to 0.7.2
+#   * [ruby/error_highlight] [DOC] Fix link in ErrorHighlight
+#   * IO::Buffer#locked: Release lock even when the block raises (#16180)
+#   * [Bug #22127] Check the dynamic regexp compilation results
+#   * [Bug #22126] Fix partial DCE with loop back-edges
+#   * [Bug #22124] Add block to the proper node
+
+install_package "openssl-3.0.20" "https://github.com/openssl/openssl/releases/download/openssl-3.0.20/openssl-3.0.20.tar.gz#c80a01dfc70ece4dc21168932c37739042d404d46ccc81a5986dd75314ecda6f" openssl --if needs_openssl:1.1.1-3.x.x
+install_git "ruby-4.0.5-pshopify1" "https://github.com/Shopify/ruby.git" "v4.0.5-pshopify1" autoconf enable_shared standard
