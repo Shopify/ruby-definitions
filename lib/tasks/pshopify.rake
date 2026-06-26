@@ -75,8 +75,8 @@ class PshopifyDefinitionCreator
     candidates = if ENV["RUBY_BUILD_PATH"]
       [ENV["RUBY_BUILD_PATH"]]
     else
-      parent = File.dirname(RUBIES_DIR, 2)
-      Dir.glob(File.join(parent, "*ruby-build"))
+      parent = File.dirname(RUBIES_DIR, 3)
+      [File.join(parent, "rbenv/ruby-build")]
     end
 
     candidates.each do |dir|
