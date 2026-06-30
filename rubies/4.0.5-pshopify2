@@ -1,0 +1,7 @@
+# https://github.com/Shopify/ruby/compare/v4.0.5-pshopify1...Shopify:v4.0.5-pshopify2
+
+# Based off v4.0.5-pshopify1, with the following changes:
+#   * Fix pm_compile_call for inline_new with keyword args
+
+install_package "openssl-3.0.20" "https://github.com/openssl/openssl/releases/download/openssl-3.0.20/openssl-3.0.20.tar.gz#c80a01dfc70ece4dc21168932c37739042d404d46ccc81a5986dd75314ecda6f" openssl --if needs_openssl:1.1.1-3.x.x
+install_git "ruby-4.0.5-pshopify2" "https://github.com/Shopify/ruby.git" "v4.0.5-pshopify2" autoconf enable_shared standard
