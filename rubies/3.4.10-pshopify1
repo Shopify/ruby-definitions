@@ -1,0 +1,9 @@
+# https://github.com/ruby/ruby/compare/v3_4_10...Shopify:v3.4.10-pshopify1
+
+# Based off v3_4_10, with the following changes:
+#   * YJIT: Fix version_map use-after-free from mutable aliasing UB
+#   * Fix env debug assertion failure w/ Ractors+JITs
+#   * Check for VM_ENV_DATA_INDEX_FLAGS in mid-escape
+
+install_package "openssl-3.0.21" "https://github.com/openssl/openssl/releases/download/openssl-3.0.21/openssl-3.0.21.tar.gz#617e29af8e421f46649484a4937e48c685e47f46488167c982f88bc4ec1d522f" openssl --if needs_openssl:1.0.2-3.x.x
+install_git "ruby-3.4.10-pshopify1" "https://github.com/Shopify/ruby.git" "v3.4.10-pshopify1" autoconf enable_shared standard
