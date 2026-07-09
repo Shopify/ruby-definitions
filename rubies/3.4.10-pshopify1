@@ -1,4 +1,4 @@
-# https://github.com/Shopify/ruby/compare/v3_4_10...Shopify:v3.4.10-pshopify1
+# https://github.com/ruby/ruby/compare/v3_4_10...Shopify:v3.4.10-pshopify1
 
 # Based off v3_4_10, with the following changes:
 #   * YJIT: Fix version_map use-after-free from mutable aliasing UB
