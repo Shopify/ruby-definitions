@@ -1,0 +1,23 @@
+# https://github.com/ruby/ruby/compare/v4.0.6...Shopify:ruby:v4.0.6-pshopify1
+# Based off v4.0.6, with the following changes:
+#   * Don't create CCs for hook methods called from C (98c5cb9fa8)
+#   * Dynamic ar_table size (59053feae8)
+#   * hash.c: refactor allocator (4b303401bc)
+#   * JIT: Reduce jit_entry_calls/jit_exception_calls to 32 bits (a4398b2e03)
+#   * compile.c: avoid needless rehash (3a8d2b92b5)
+#   * Introduce rb_zjit_compiling_p/rb_yjit_compiling_p (8099182953)
+#   * Stop incrementing the JIT call counter when not compiled (0fc585abfa)
+#   * Reapply "Simplify iseq mark_and_move CC handling" (f2b4f12ab6)
+#   * Reapply "Fix check in cc_is_active" (ffb3db3e81)
+#   * [Bug #22242] Invalidate CCs on cc_table_dup (1457ed7d4b)
+#   * Unify jit_payload in iseq_constant_body (a6e632eeae)
+#   * Don't record EP escape in JIT when not enabled (4a821ae0c5)
+#   * Combine items, keys, collision_table in rb_id_table (83ce59d92f)
+#   * Reduce memory usage of rb_id_table (f26ce63206)
+#   * hash.c: compact ar_table on freeze (a4c78d88e2)
+#   * rb_gc_obj_optimal_size: don't enlarge small AR table hashes (1369a7fd3b)
+#   * Always allocate CDHASH in 80B slots (d7b49f6724)
+#   * Allow fixed size hashes to be allocated in smaller slots (d96f01347e)
+
+install_package "openssl-3.0.20" "https://github.com/openssl/openssl/releases/download/openssl-3.0.20/openssl-3.0.20.tar.gz#c80a01dfc70ece4dc21168932c37739042d404d46ccc81a5986dd75314ecda6f" openssl --if needs_openssl:1.1.1-3.x.x
+install_git "ruby-4.0.6-pshopify1" "https://github.com/Shopify/ruby.git" "v4.0.6-pshopify1" autoconf enable_shared standard
