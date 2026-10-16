@@ -1,0 +1,58 @@
+# https://github.com/Shopify/ruby/compare/v4.0.7-pshopify2...Shopify:v4.0.7-pshopify3
+# Commit: 3fdb48307de9451f2c4d46c5e0c7537ad9f496aa
+
+# Based off v4.0.7-pshopify2, with the following changes:
+#   * d50f404ca1 [Bug #22311] Check the availability of APIs added in macOS 27
+#   * 9aea6bb2f1 [DOC] Exclude `require` in RubyGems not to override the original
+#   * 1533c10971 Preserve compare_by_identity in some Set operations
+#   * 53da7e1660 Avoid overflow in the quantifier expansion size check
+#   * 6841c0a87b Reject a compiled program too big for its offset type
+#   * 4ac2a34ced [Bug #22383] Fix inverted `STR_SHARED` check in `rb_str_tmp_frozen_release`
+#   * 67cd1d3bde [Bug #22387] Fix termlen in str_shared_replace (#19104)
+#   * 9554389753 ZJIT: Don't panic when calling RubyVM::ZJIT.reset_stats! with ZJIT off
+#   * f980c9475b Fix reuse of MatchData assigned to $~
+#   * d47f97273f Fix write barrier in update_classvariable_cache
+#   * 801356f317 Relax the flaky test threshold on RHEL 10.0 x86_64
+#   * f87d6b0d1e Use ubuntu-latest for macOS result jobs
+#   * af867e0893 Stop using the macos-14 runner image
+#   * 6e4eb1e1d0 Omit the fiber pool exhaustion test with a large max_map_count
+#   * 555611e109 Fix Method#inspect when klass is iclass
+#   * b58cb49058 Fix crash when source string modified in String#unpack
+#   * f8cb02fbb7 Fix use-after-free when clearing array during flatten
+#   * 4e9102bf35 Fix use-after-free when clearing array during zip
+#   * db1082f4dc [Bug #22322] Take transcoder names from declared transcoders
+#   * fc7d08aeca Fix crash when returning splat
+#   * 8b1a10840a [Bug #22336] Fix use-after-free in `IO::Buffer#get_string`. (#18919)
+#   * 8fe2e0da67 [Bug] win32: create directory symlinks for relative directory targets
+#   * af018f161f win32: use MEMCPY for overflow-safe copy in w32_symlink
+#   * df1c052c90 [Bug] win32: do not resolve a root-relative symlink target against the link dir
+#   * 8a4df09cc6 win32: rename the symlink target flag to independent
+#   * 117b6497e7 Fix use-after-free in String#encode when string modified
+#   * 2374bd218c [Bug #22340] Fix stat on symbolic-link loops on Windows
+#   * 831f43b97e [Bug #22335] Use identity hashes for keyword argument tracking
+#   * ae7c5a31f8 Fix prepend ancestry order in user boxes
+#   * 0f17de3708 [Bug #22339] Skip classes already freed while freeing a box
+#   * d05180d0f6 Attach a box classext to its class before filling it in
+#   * eb4d16c775 Use Kernel without test/unit in the classext GC stress test
+#   * 4982f5bd18 Fix IO#gets ignoring the limit argument
+#   * 133bc46e19 io: preserve errno across `rb_io_wait()` call. (#19121)
+#   * f426035478 [Bug #22384] Fix memory leak on compile error in a later branch of an alternation
+#   * 9568b5dfce [Bug #22388] Fix use-after-free in some `Enumerable` methods
+#   * bd154f0435 [Bug #22388] Fix use-after-free in `Enumerable#sum`
+#   * 566e6dc8c0 [Bug #22388] Fix use-after-free in `Enumerator::Lazy#flat_map`
+#   * ccccb04486 [Bug #22388] Fix use-after-free in `Set#&`
+#   * 1328590e45 [Bug #22284] Fix curry with a non-Fixnum arity on LLP64
+#   * 18e7b33cf4 [Bug #22284] Let NUM2INT handle Fixnum arity of curry
+#   * 44da562d59 [Bug #22284] Test curry with an arity that responds to to_int
+#   * 738b4971c6 Fix buffer overflow in Array#values_at
+#   * 15212f6c1c [Bug #22416] Respect timezone abbreviation encodings in strftime
+#   * df0d7a87b6 [Backport #22426] ZJIT: Snapshot FrameState with reordered args before direct send
+#   * f4f2dfb3c7 Defer unloading box-local extension DLLs on Windows
+#   * 59db3a3a81 Join getaddrinfo and getnameinfo threads before fork
+#   * 27204205e6 Reset the fork lock in the child without unlocking it
+#   * 6776cc5a38 Remove discard qualifiers warning with C23 strchr
+#   * ac121993f5 [Backport #22415] Restore ec->errinfo after handling interrupts
+#   * 3fdb48307d Merge remote-tracking branch 'origin/ruby_4_0' into v4.0.7-pshopify3
+
+install_package "openssl-3.0.22" "https://github.com/openssl/openssl/releases/download/openssl-3.0.22/openssl-3.0.22.tar.gz#67ebca7e50d17383028045486653492195b83db95f8558709701bb47b5c1ef81" openssl --if needs_openssl:1.1.1-3.x.x
+install_git "ruby-4.0.7-pshopify3" "https://github.com/Shopify/ruby.git" "v4.0.7-pshopify3" autoconf enable_shared standard
