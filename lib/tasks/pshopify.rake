@@ -15,6 +15,7 @@ class PshopifyDefinitionCreator
   SHOPIFY_RUBY_REPO = "Shopify/ruby"
   SHOPIFY_RUBY_GIT_URL = "https://github.com/#{SHOPIFY_RUBY_REPO}.git"
   RUBIES_DIR = File.expand_path("../../rubies", __dir__)
+  SHORT_SHA_LENGTH = 10
 
   def initialize(base_version = nil)
     @base_version = base_version
@@ -29,7 +30,7 @@ class PshopifyDefinitionCreator
 
     puts "Creating definition for #{@pshopify_version}..."
 
-    verify_branch_exists
+    @sha = verify_branch_exists
     openssl_line = read_upstream_openssl_line
     compare_base = determine_compare_base
     verify_previous_pshopify_included if @pshopify_num > 1
@@ -51,9 +52,12 @@ class PshopifyDefinitionCreator
     (existing.max || 0) + 1
   end
 
+  # Returns the sha the branch points at, so the definition records the exact
+  # commit it was generated from (the branch may move later).
   def verify_branch_exists
-    gh_api("repos/#{SHOPIFY_RUBY_REPO}/branches/#{@tag}")
-    puts "  Branch #{@tag} exists"
+    sha = gh_api("repos/#{SHOPIFY_RUBY_REPO}/branches/#{@tag}").dig("commit", "sha")
+    puts "  Branch #{@tag} exists (#{sha})"
+    sha
   rescue GhApiError => e
     abort("Error: branch #{@tag} does not exist on #{SHOPIFY_RUBY_REPO}\n#{e.message}")
   end
@@ -144,7 +148,9 @@ class PshopifyDefinitionCreator
   def fetch_changelog(compare_base)
     data = gh_api("repos/#{SHOPIFY_RUBY_REPO}/compare/#{compare_base}...#{@tag}")
     commits = data.fetch("commits", [])
-    commits.map { |c| c.dig("commit", "message").lines.first.chomp }
+    commits.map do |c|
+      { sha: c.fetch("sha")[0, SHORT_SHA_LENGTH], message: c.dig("commit", "message").lines.first.chomp }
+    end
   rescue GhApiError => e
     warn("Warning: could not fetch changelog: #{e.message}")
     []
@@ -153,11 +159,12 @@ class PshopifyDefinitionCreator
   def generate_definition(compare_base, commits, openssl_line)
     lines = []
     lines << "# https://github.com/#{SHOPIFY_RUBY_REPO}/compare/#{compare_base}...Shopify:#{@tag}"
+    lines << "# Commit: #{@sha}" if @sha
     lines << ""
 
     if commits.any?
       lines << "# Based off #{compare_base}, with the following changes:"
-      commits.each { |msg| lines << "#   * #{msg}" }
+      commits.each { |c| lines << "#   * #{c[:sha]} #{c[:message]}" }
     else
       lines << "# Based off #{compare_base}"
     end
