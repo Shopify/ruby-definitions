@@ -1,14 +1,73 @@
 name: Build changed definitions
 
+# Deliberately not filtered on `paths: rubies/**`. A required check that is
+# filtered out never reports at all and leaves the pull request waiting for it
+# forever, so instead this runs everywhere and `detect` finds nothing to do.
 on:
   pull_request:
-    paths:
-      - 'rubies/**'
+  workflow_dispatch:
+    inputs:
+      definitions:
+        description: 'Definitions to check, separated by spaces or commas (e.g. "4.0.5-pshopify3 3.4.10-pshopify1")'
+        required: true
+        type: string
+      benchmark:
+        description: 'Run benchmarks (slow)'
+        required: false
+        default: true
+        type: boolean
+
+# Applies to every ruby-build invocation in this workflow, so the rubies we test
+# and the rubies we benchmark are built the same way.
+#
+# `cflags` is a ruby configure variable that is appended to the compiler flags,
+# unlike CFLAGS (which ruby-build would set from RUBY_CFLAGS): setting CFLAGS in
+# the environment takes a different path through configure, and what ends up in
+# the build is easy to get wrong. `cflags` keeps the defaults that matter,
+# optflags=-O3 and debugflags=-ggdb3, so debug info is already on and only the
+# frame pointer has to be asked for. The flag order does not matter: an
+# explicitly set -f option wins over whatever -O implies.
+#
+# Frame pointers are what let production profilers unwind these rubies. This is
+# a property of the workflow rather than of the definitions: anything else that
+# builds them gets whatever its own RUBY_CONFIGURE_OPTS says. The intent is to
+# test and benchmark a build shaped like the one we deploy, not to reproduce it.
+#
+# Keep this free of spaces: ruby-build word splits RUBY_CONFIGURE_OPTS onto the
+# configure command line, so `cflags="-a -b"` would pass `-b` as its own option
+# and configure rejects unrecognized options.
+env:
+  RUBY_CONFIGURE_OPTS: cflags=-fno-omit-frame-pointer
+
+# Reading check runs on Shopify/ruby and ruby/ruby needs nothing extra, since
+# both are public.
+permissions:
+  contents: read
+
+# These jobs run for up to two hours (build) and three hours (benchmark), so a
+# superseded run should not keep occupying runners. Manual runs get a group of
+# their own: several dispatches against the same branch are separate requests
+# rather than one superseding the other.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.event_name == 'workflow_dispatch' && github.run_id || 'pr' }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  # Runs for fork pull requests too, even though their definitions are not built
+  # here: checking out and diffing only needs the read-only token, and a fork
+  # pull request that does not touch rubies/ has nothing to validate and should
+  # not be failed by `result`.
+  detect:
     runs-on: ubuntu-latest
-    name: Build changed definitions
+    name: Detect changed definitions
+    outputs:
+      has_definitions: ${{ steps.changed.outputs.has_definitions }}
+      definitions: ${{ steps.changed.outputs.definitions }}
+      # Nothing here needs a write token, so this is policy rather than a
+      # technical limit: the rubies we ship are proposed from this repository,
+      # and a definition fetches and builds whatever source it names, which is
+      # not something to run for an outside contributor on our runners.
+      same_repo: ${{ github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -16,21 +75,114 @@ jobs:
 
       - name: Detect changed definitions
         id: changed
+        env:
+          INPUT_DEFINITIONS: ${{ inputs.definitions }}
+          BASE_REF: ${{ github.base_ref }}
         run: |
-          files=$(git diff --name-only --diff-filter=ACMR origin/${{ github.base_ref }}...HEAD -- rubies/)
-          defs=$(echo "$files" | sed 's|^rubies/||' | grep -v '^truffleruby' | grep -v '^$' || true)
-          if [ -z "$defs" ]; then
-            echo "No CRuby definitions changed"
-            echo "has_definitions=false" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            # sort -u: a name given twice would otherwise build twice and the
+            # two jobs would collide uploading the same artifact name.
+            defs=$(echo "$INPUT_DEFINITIONS" | tr ',' '\n' | tr ' ' '\n' | grep -v '^$' | sort -u || true)
           else
-            echo "Changed definitions:"
-            echo "$defs"
-            echo "has_definitions=true" >> "$GITHUB_OUTPUT"
-            echo "$defs" > /tmp/changed-definitions.txt
+            files=$(git diff --name-only --diff-filter=ACMR "origin/$BASE_REF...HEAD" -- rubies/)
+            defs=$(echo "$files" | sed 's|^rubies/||' | grep -v '^truffleruby' | grep -v '^$' || true)
           fi
 
+          # These names end up as matrix values that later jobs pass to
+          # ruby-build and to the report scripts. Anything outside this
+          # character set is not a definition we know how to build, and a name
+          # carrying shell metacharacters or a leading dash has no business
+          # reaching a command line, so reject it here rather than quoting
+          # carefully everywhere downstream.
+          #
+          # Read a line at a time: `for def in $defs` would split on spaces and
+          # glob, so a definition named "*" would be checked as the contents of
+          # the working directory, all of which pass, while the matrix still
+          # received "*".
+          invalid=0
+          while IFS= read -r def; do
+            [ -n "$def" ] || continue
+
+            case "$def" in
+              -*|*[!A-Za-z0-9._+-]*)
+                echo "::error::Refusing to build a definition with an unexpected name: $def"
+                invalid=1
+                continue
+                ;;
+            esac
+
+            # A dispatch names definitions that are not necessarily changed, so
+            # check they exist; the pull request list comes from git and does.
+            if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+              case "$def" in
+                truffleruby*)
+                  echo "::error::truffleruby definitions are not supported by this workflow: $def"
+                  invalid=1
+                  ;;
+                *)
+                  if [ ! -f "rubies/$def" ]; then
+                    echo "::error::No such definition: rubies/$def"
+                    invalid=1
+                  fi
+                  ;;
+              esac
+            fi
+          done <<< "$defs"
+          [ "$invalid" -eq 0 ] || exit 1
+
+          if [ -z "$defs" ]; then
+            echo "No CRuby definitions to check"
+            echo "has_definitions=false" >> "$GITHUB_OUTPUT"
+            echo "definitions=[]" >> "$GITHUB_OUTPUT"
+          else
+            echo "Definitions to check:"
+            echo "$defs"
+            echo "has_definitions=true" >> "$GITHUB_OUTPUT"
+            echo "definitions=$(echo "$defs" | jq -Rsc 'split("\n") | map(select(length > 0))')" >> "$GITHUB_OUTPUT"
+          fi
+
+  upstream-ci:
+    needs: detect
+    if: needs.detect.outputs.has_definitions == 'true' && needs.detect.outputs.same_repo == 'true'
+    runs-on: ubuntu-latest
+    name: Upstream CI ${{ matrix.definition }}
+    strategy:
+      fail-fast: false
+      matrix:
+        definition: ${{ fromJSON(needs.detect.outputs.definitions) }}
+    steps:
+      - uses: actions/checkout@v7
+
+      # Reports (and links to) the CI results of the Shopify/ruby ref the
+      # definition builds from. Informational: pass --strict to fail the job
+      # when upstream has failing checks.
+      - name: Upstream CI status
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DEFINITION: ${{ matrix.definition }}
+        run: ruby .github/scripts/upstream_ci_status.rb "rubies/$DEFINITION"
+
+  build:
+    needs: detect
+    if: needs.detect.outputs.has_definitions == 'true' && needs.detect.outputs.same_repo == 'true'
+    runs-on: ubuntu-latest
+    # ruby-build takes a few minutes and test-all runs serially (see below), so
+    # the usual job is well under an hour; the ceiling is here to catch a hang.
+    timeout-minutes: 120
+    name: Build ${{ matrix.definition }}
+    strategy:
+      fail-fast: false
+      matrix:
+        definition: ${{ fromJSON(needs.detect.outputs.definitions) }}
+    env:
+      # Keeping the build path lets us run CRuby's test suite against the tree
+      # that ruby-build just compiled.
+      RUBY_BUILD_BUILD_PATH: /tmp/ruby-build-src
+      PREFIX_PATH: /tmp/ruby-prefix
+    steps:
+      - uses: actions/checkout@v7
+
       - name: Install build dependencies
-        if: steps.changed.outputs.has_definitions == 'true'
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
@@ -38,24 +190,330 @@ jobs:
             libssl-dev libyaml-dev libreadline-dev libffi-dev libgdbm-dev libncurses-dev zlib1g-dev
 
       - name: Install ruby-build
-        if: steps.changed.outputs.has_definitions == 'true'
         run: |
-          git clone --depth 1 https://github.com/rbenv/ruby-build.git /tmp/ruby-build
+          .github/scripts/clone.sh https://github.com/rbenv/ruby-build.git /tmp/ruby-build
           sudo /tmp/ruby-build/install.sh
 
-      - name: Build definitions
-        if: steps.changed.outputs.has_definitions == 'true'
+      - name: Build ${{ matrix.definition }}
+        env:
+          DEFINITION: ${{ matrix.definition }}
         run: |
-          failed=0
-          while IFS= read -r def; do
-            echo "::group::Build $def"
-            if RUBY_BUILD_DEFINITIONS=$GITHUB_WORKSPACE/rubies \
-                ruby-build "$def" "/tmp/ruby-$def"; then
-              "/tmp/ruby-$def/bin/ruby" --version
-            else
-              echo "::error::Build failed for $def"
-              failed=1
+          RUBY_BUILD_DEFINITIONS="$GITHUB_WORKSPACE/rubies" \
+            ruby-build --keep "$DEFINITION" "$PREFIX_PATH"
+          "$PREFIX_PATH/bin/ruby" --version
+
+      - name: Locate source tree
+        id: src
+        run: |
+          # ruby-build clones into $RUBY_BUILD_BUILD_PATH/<package name>, which is
+          # usually but not always "ruby-<definition>" (and openssl may be there too).
+          mapfile -t dirs < <(find "$RUBY_BUILD_BUILD_PATH" -mindepth 1 -maxdepth 1 -type d -name 'ruby-*')
+          if [ "${#dirs[@]}" -ne 1 ]; then
+            echo "::error::Expected exactly one ruby source tree, found: ${dirs[*]:-none}"
+            exit 1
+          fi
+          echo "dir=${dirs[0]}" >> "$GITHUB_OUTPUT"
+
+      # Shopify/ruby CI runs `make check` on these refs, but not in this
+      # configuration: ruby-build builds in-tree from a git clone with
+      # --with-ext=openssl,psych,+ (which makes the build fail, rather than warn,
+      # if those extensions do not compile), --enable-shared without
+      # --enable-load-relative, the distro OpenSSL, and the frame pointers this
+      # workflow asks for. Upstream CI is also partially red on the refs we ship,
+      # so it cannot gate anything; this can.
+      #
+      # test-all runs serially. If it gets too slow, TESTOPTS=-j$(nproc) is the
+      # knob: `make -j` does not parallelize it, since it is a single target that
+      # shells out to tool/test/runner.rb.
+      - name: make -s btest test-all
+        working-directory: ${{ steps.src.outputs.dir }}
+        run: make -s btest test-all
+
+      # What upstream CI cannot cover: that this definition produces a working
+      # installed ruby. ruby-build configures --with-ext=openssl,psych,+ and
+      # --enable-shared, so check the extensions load from the install prefix
+      # and that the shared library layout is intact.
+      - name: Smoke test installed ruby
+        if: ${{ !cancelled() }}
+        run: |
+          set -e
+          "$PREFIX_PATH/bin/ruby" -e '
+            %w[openssl psych zlib socket digest stringio json].each { |lib| require lib }
+            raise "not built with --enable-shared" unless RbConfig::CONFIG["ENABLE_SHARED"] == "yes"
+            puts RUBY_DESCRIPTION
+            puts "openssl: #{OpenSSL::OPENSSL_LIBRARY_VERSION}"
+            puts "libruby: #{RbConfig::CONFIG["LIBRUBY_SO"]}"
+          '
+          "$PREFIX_PATH/bin/gem" list > /dev/null
+
+          # YJIT is what production runs, and from 3.2 on it is only compiled in
+          # when rustc was available at configure time, which a ruby then
+          # silently ignores --yjit without. The benchmark job checks this too,
+          # but it does not gate, and 3.0/3.1 definitions predate a YJIT we
+          # would want to assert on.
+          version=$("$PREFIX_PATH/bin/ruby" -e 'print RUBY_VERSION')
+          case "$version" in
+            3.0.*|3.1.*)
+              echo "YJIT not expected in $version"
+              ;;
+            *)
+              "$PREFIX_PATH/bin/ruby" --yjit -e '
+                raise "ruby #{RUBY_VERSION} was built without a working YJIT" unless RubyVM::YJIT.enabled?
+                puts "yjit: enabled"
+              '
+              ;;
+          esac
+
+  # Informational: compares the proposed ruby against the previous definition
+  # using ruby/ruby-bench. Deliberately not part of the `result` gate, since
+  # shared GitHub runners are too noisy to block a merge on.
+  benchmark:
+    needs: detect
+    if: >-
+      needs.detect.outputs.has_definitions == 'true' && needs.detect.outputs.same_repo == 'true'
+      && (github.event_name != 'workflow_dispatch' || inputs.benchmark)
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    name: Benchmark ${{ matrix.definition }}
+    strategy:
+      fail-fast: false
+      matrix:
+        definition: ${{ fromJSON(needs.detect.outputs.definitions) }}
+    env:
+      RUBY_BENCH_DIR: /tmp/ruby-bench
+      # The series the report depends on. ruby-bench is checked out from its
+      # default branch rather than pinned, so these are asserted on every run:
+      # a renamed series fails the step instead of quietly turning into an empty
+      # cell and dropping GC and memory from what we check.
+      REQUIRED_SERIES: bench,gc_total_time_bench,rss_samples
+      # The gc category adds gcbench and string_malloc_pressure, which run under
+      # ruby-bench's gc harness and record per-iteration GC counters, and --rss
+      # records memory. Several of the patches we carry touch the GC and object
+      # layout, and that kind of regression is easier to see in GC time and RSS
+      # than in wall time.
+      BENCH_ARGS: --headline --category gc --rss --interleave --pvalue
+      # Space separated: interp and/or yjit. Each extra mode adds a full
+      # measurement pass over every benchmark. YJIT only, since that is what
+      # production runs; add interp to also compare the interpreters.
+      BENCH_MODES: yjit
+      REGRESSION_THRESHOLD: "5"
+    steps:
+      - uses: actions/checkout@v7
+
+      # Before resolving the baseline, which needs ruby-build's own definitions
+      # to be on disk to look up an upstream release.
+      - name: Install ruby-build
+        run: |
+          .github/scripts/clone.sh https://github.com/rbenv/ruby-build.git /tmp/ruby-build
+          sudo /tmp/ruby-build/install.sh
+
+      - name: Resolve baseline definition
+        id: baseline
+        env:
+          CANDIDATE: ${{ matrix.definition }}
+        run: |
+          skip() {
+            echo "No benchmark baseline for \`$CANDIDATE\`: $1" >> "$GITHUB_STEP_SUMMARY"
+            echo "name=" >> "$GITHUB_OUTPUT"
+            exit 0
+          }
+
+          baseline=$(ruby .github/scripts/previous_definition.rb "$CANDIDATE" 2>/tmp/baseline-reason)
+          cat /tmp/baseline-reason >&2
+
+          if [ -z "$baseline" ]; then
+            reason='no earlier definition to compare against'
+            [ -s /tmp/baseline-reason ] && reason="$(cat /tmp/baseline-reason)"
+            skip "$reason"
+          fi
+
+          # The baseline is either one of our definitions or, for the first
+          # Shopify patch of a release, the upstream version from ruby-build's
+          # own definitions (e.g. 4.0.7 for 4.0.7-pshopify1). ruby-build can lag
+          # a brand new release, so check before relying on it.
+          #
+          # Its definitions live next to the executable that install.sh put on
+          # PATH, rather than at a fixed path.
+          definition="rubies/$baseline"
+          if [ ! -f "$definition" ]; then
+            definition="$(dirname "$(dirname "$(command -v ruby-build)")")/share/ruby-build/$baseline"
+          fi
+          if [ ! -f "$definition" ]; then
+            echo "::warning::ruby-build has no definition for $baseline; skipping benchmarks."
+            skip "ruby-build has no \`$baseline\` definition yet"
+          fi
+
+          echo "Comparing $CANDIDATE against $baseline ($definition):"
+          cat "$definition"
+          echo "name=$baseline" >> "$GITHUB_OUTPUT"
+
+      # Cloned outside the workspace, and not with actions/checkout, which
+      # refuses a path outside it. Benchmarks run from their own directory and
+      # anything that searches upward from there would otherwise reach this
+      # repository's Gemfile, .ruby-version and .rubocop.yml, which have nothing
+      # to do with what we are measuring.
+      #
+      # Run before the builds, so that a clone that fails all its attempts fails
+      # in seconds rather than after this job has compiled both rubies.
+      #
+      # Also records which revision produced the numbers, since the suite is not
+      # pinned and the benchmark set it selects can change between runs.
+      - name: Check out ruby-bench
+        if: steps.baseline.outputs.name != ''
+        run: |
+          .github/scripts/clone.sh https://github.com/ruby/ruby-bench "$RUBY_BENCH_DIR"
+          cd "$RUBY_BENCH_DIR"
+          echo "ruby-bench: [\`$(git rev-parse --short HEAD)\`](https://github.com/ruby/ruby-bench/commit/$(git rev-parse HEAD))" >> "$GITHUB_STEP_SUMMARY"
+          git log -1 --format='ruby-bench %H %ad %s' --date=short
+
+      - name: Install build dependencies
+        if: steps.baseline.outputs.name != ''
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            autoconf bison build-essential \
+            libssl-dev libyaml-dev libreadline-dev libffi-dev libgdbm-dev libncurses-dev zlib1g-dev \
+            libsqlite3-dev
+
+      # Both rubies are built from scratch every run, deliberately. A cached
+      # baseline would only ever be reused by a rerun of the same pull request,
+      # since caches written by a pull request run are scoped to it, and it
+      # would have to be invalidated on everything that changes the binary
+      # (definition, configure options, runner image, ruby-build version) to
+      # stay comparable against a freshly built candidate. Benchmarks run rarely
+      # enough that ten minutes of rebuild is cheaper than that bookkeeping.
+      - name: Build baseline ${{ steps.baseline.outputs.name }}
+        if: steps.baseline.outputs.name != ''
+        env:
+          BASELINE: ${{ steps.baseline.outputs.name }}
+        run: |
+          RUBY_BUILD_DEFINITIONS="$GITHUB_WORKSPACE/rubies" \
+            ruby-build "$BASELINE" "/opt/rubies/$BASELINE"
+
+      - name: Build candidate ${{ matrix.definition }}
+        if: steps.baseline.outputs.name != ''
+        env:
+          DEFINITION: ${{ matrix.definition }}
+        run: |
+          RUBY_BUILD_DEFINITIONS="$GITHUB_WORKSPACE/rubies" \
+            ruby-build "$DEFINITION" "/opt/rubies/$DEFINITION"
+
+      # YJIT is only compiled in when rustc was present at configure time, and a
+      # ruby without it silently ignores --yjit, which would make the YJIT numbers
+      # meaningless. Fail loudly instead.
+      - name: Verify YJIT
+        if: ${{ steps.baseline.outputs.name != '' && contains(env.BENCH_MODES, 'yjit') }}
+        env:
+          BASELINE: ${{ steps.baseline.outputs.name }}
+          DEFINITION: ${{ matrix.definition }}
+        run: |
+          for def in "$BASELINE" "$DEFINITION"; do
+            if ! "/opt/rubies/$def/bin/ruby" --yjit -e 'exit RubyVM::YJIT.enabled?' 2>/dev/null; then
+              echo "::error::$def was built without YJIT (rustc missing at configure time?)"
+              exit 1
             fi
-            echo "::endgroup::"
-          done < /tmp/changed-definitions.txt
-          exit "$failed"
+            echo "$def: $("/opt/rubies/$def/bin/ruby" --yjit -e 'print RUBY_DESCRIPTION')"
+          done
+
+      - name: Run benchmarks
+        if: steps.baseline.outputs.name != ''
+        working-directory: ${{ env.RUBY_BENCH_DIR }}
+        env:
+          BASELINE: ${{ steps.baseline.outputs.name }}
+          CANDIDATE: ${{ matrix.definition }}
+        run: |
+          # ruby-bench compares every executable against the first one, so the
+          # baseline interpreter leads and the report script pairs up the rest.
+          executables=()
+          for mode in $BENCH_MODES; do
+            case "$mode" in
+              interp) suffix=""; flags="" ;;
+              yjit) suffix="+yjit"; flags=" --yjit" ;;
+              *) echo "::error::unknown benchmark mode: $mode"; exit 1 ;;
+            esac
+            for def in "$BASELINE" "$CANDIDATE"; do
+              executables+=(-e "${def}${suffix}::/opt/rubies/${def}/bin/ruby${flags}")
+            done
+          done
+          # ruby-bench writes its JSON before exiting non-zero for a benchmark
+          # that failed to run, so the report step still has data to work with.
+          # Keep the log for the failure list it prints at the end.
+          set -o pipefail
+          ./run_benchmarks.rb $BENCH_ARGS --out-name=compare "${executables[@]}" 2>&1 | tee /tmp/benchmarks.log
+
+      # Runs even when a benchmark failed: one benchmark that cannot run says
+      # nothing about the others, and a crash in a benchmark is itself a result
+      # worth reporting next to the numbers.
+      - name: Report regressions
+        if: ${{ steps.baseline.outputs.name != '' && !cancelled() }}
+        env:
+          BASELINE: ${{ steps.baseline.outputs.name }}
+          DEFINITION: ${{ matrix.definition }}
+        run: |
+          # ruby-bench prints "Failed benchmarks: <count>" before the results and
+          # the per-executable list, headed by a bare "Failed benchmarks:", last.
+          if grep -q '^Failed benchmarks:$' /tmp/benchmarks.log 2>/dev/null; then
+            {
+              echo "### Benchmarks that failed to run"
+              echo
+              sed -n '/^Failed benchmarks:$/,$p' /tmp/benchmarks.log | tail -n +2 | sed 's/^ */- /'
+              echo
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+          if [ ! -f "$RUBY_BENCH_DIR/compare.json" ]; then
+            echo "::warning::ruby-bench produced no results; nothing to report."
+            echo "No benchmark results were produced." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
+          # --strict fails this job on a flagged regression. The report is still
+          # written first, and the gate job does not depend on this one, so a
+          # noisy result is visible without blocking anything that must pass.
+          ruby .github/scripts/benchmark_report.rb --strict \
+            --baseline "$BASELINE" \
+            --candidate "$DEFINITION" \
+            --require-series "$REQUIRED_SERIES" \
+            --threshold "$REGRESSION_THRESHOLD" "$RUBY_BENCH_DIR/compare.json"
+
+      - name: Upload benchmark data
+        if: ${{ steps.baseline.outputs.name != '' && !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: benchmarks-${{ matrix.definition }}
+          path: ${{ env.RUBY_BENCH_DIR }}/compare.*
+          if-no-files-found: warn
+
+  # Stable check name to point branch protection at, since the matrix job names
+  # vary with the definitions changed in the PR.
+  result:
+    needs: [detect, build]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    name: Definitions built and tested
+    steps:
+      - name: Check job results
+        env:
+          DETECT: ${{ needs.detect.result }}
+          BUILD: ${{ needs.build.result }}
+          HAS_DEFINITIONS: ${{ needs.detect.outputs.has_definitions }}
+          SAME_REPO: ${{ needs.detect.outputs.same_repo }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          echo "detect: $DETECT"
+          echo "build: $BUILD"
+          # A fork pull request that leaves rubies/ alone has nothing for this
+          # workflow to validate and passes like any other. One that changes a
+          # definition fails, because we do not build definitions proposed from
+          # a fork and the change must not look reviewed when it was never
+          # compiled.
+          if [ "$SAME_REPO" != "true" ] && [ "$HAS_DEFINITIONS" = "true" ]; then
+            echo "::error::Pull request is from a fork ($HEAD_REPO); its definition changes are not built or tested here."
+            echo "Definitions were **not** built or tested: this pull request changes definitions and comes from a fork (\`$HEAD_REPO\`). Push the branch to this repository instead." >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+          # build is skipped when a PR only touches truffleruby definitions.
+          if [ "$DETECT" = "success" ] && { [ "$BUILD" = "success" ] || [ "$BUILD" = "skipped" ]; }; then
+            exit 0
+          fi
+          exit 1
