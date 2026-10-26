@@ -1,0 +1,36 @@
+# https://github.com/Shopify/ruby/compare/v4.0.9...Shopify:v4.0.9-pshopify1
+# Commit: 88b318ef73153bfdbd2c80f058466a5529ca3cf9
+
+# Based off v4.0.9, with the following changes:
+# From 4.0.6-pshopify1 and 4.0.6-pshopify2:
+#   * 2b8afc0d3b Allow fixed size hashes to be allocated in smaller slots
+#   * 70542bb009 Always allocate CDHASH in 80B slots
+#   * 92e01c4f73 rb_gc_obj_optimal_size: don't enlarge small AR table hashes
+#   * 86dde22f38 hash.c: compact ar_table on freeze
+#   * aaeacbd4ab Reduce memory usage of rb_id_table
+#   * 01ea72c726 Combine items, keys, collision_table in rb_id_table
+#   * 52123979e8 Don't record EP escape in JIT when not enabled
+#   * 16494f1713 Unify jit_payload in iseq_constant_body
+#   * 9e5ef24b26 Reapply "Fix check in cc_is_active"
+#   * b6e3272ae7 Reapply "Simplify iseq mark_and_move CC handling"
+#   * 41c8b5a9a4 Stop incrementing the JIT call counter when not compiled
+#   * 6f1fcc5a5b Introduce rb_zjit_compiling_p/rb_yjit_compiling_p
+#   * 3ddae62a57 compile.c: avoid needless rehash
+#   * 6ac4eec201 JIT: Reduce jit_entry_calls/jit_exception_calls to 32 bits
+#   * 0779807c15 hash.c: refactor allocator
+#   * 6d245a2eb0 Dynamic ar_table size
+#   * 5ef8436448 Don't create CCs for hook methods called from C
+#   * 0efb9281cc Fix T_HASH not being WB_PROTECTED
+#   * 5f5a220dc0 Add test for WB-protection in objspace
+# From 4.0.7-pshopify1:
+#   * 42cf22e2d4 Allow sharing middlesubstring if the terminator is present
+# From 4.0.7-pshopify2:
+#   * 92f8ccf5c9 Fix GC crash during Hash#merge
+# Merge in ruby_4_0 backports branch:
+#   * 3fdb48307d Merge remote-tracking branch 'origin/ruby_4_0' into v4.0.7-pshopify3
+#   * 844a167595 test/ruby/test_io.rb: do not set RLIMIT_NPROC
+#   * 9bcca300da test/ruby/test_process.rb: simplify testing spawn with long strings
+#   * 88b318ef73 Merge remote-tracking branch 'origin/ruby_4_0' into v4.0.9-pshopify1
+
+install_package "openssl-3.0.22" "https://github.com/openssl/openssl/releases/download/openssl-3.0.22/openssl-3.0.22.tar.gz#67ebca7e50d17383028045486653492195b83db95f8558709701bb47b5c1ef81" openssl --if needs_openssl:1.1.1-4.x.x
+install_git "ruby-4.0.9-pshopify1" "https://github.com/Shopify/ruby.git" "v4.0.9-pshopify1" autoconf enable_shared standard
